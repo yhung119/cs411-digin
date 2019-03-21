@@ -1,3 +1,4 @@
+Added very basic polling system with vote counting based on the tutorial at https://docs.djangoproject.com/en/1.10/intro/tutorial01/
 
 # CS411 Final Project - Digin
 
