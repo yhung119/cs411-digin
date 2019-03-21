@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'leads', # new app
     'rest_framework',
     'frontend',
+	'django_mysql',
+	'polls.apps.PollsConfig',
 ]
 
 MIDDLEWARE = [
@@ -79,9 +81,24 @@ WSGI_APPLICATION = 'digin.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'OPTIONS': {
-            'read_default_file': './digin/my.cnf',
-        },
+        #'OPTIONS': {
+        #   'read_default_file': './digin/my.cnf',
+		#},
+		'USER' : 'root',
+		'PASSWORD' : '',
+		'NAME' : 'test',
+		'HOST' : 'localhost',
+		'PORT' : '3306',
+		'OPTIONS':{
+			'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+			'charset': 'utf8mb4',
+			'read_default_file': './digin/my.cnf',
+		},
+		'TEST': {
+			'CHARSET': 'utf8mb4',
+			'COLLATION': 'utf8mb4_unicode_ci',	
+		}
+        
     }
 }
 
