@@ -1,6 +1,19 @@
 
 # CS411 Final Project - Digin
 
+## Current Schema
+- user : UID, location, email, name, (later: pwd, authenticate)
+
+  pk: UID
+  
+- poll : PID, owner, poll_name, eating_time, deadline_time, created_time, (later: participants)
+
+  pk: PID
+
+- choice : PID, UID, name, lat, long, vote
+
+  pk: PID, UID, name
+
 ## Requirements
 - python3
 - mysql
