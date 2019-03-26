@@ -1,12 +1,13 @@
 <h1>{{ question.question_text }}</h1>
 {% with edit=False %}     
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+<h1>{{ question.pub_date }}</h1>
 
 
 {% if edit == False %}
 <form action="{% url 'polls:vote' question.id %}" method="post">
 {% csrf_token %}
-{% for choice in question.choice_set.all %}
+{% for choice in choices %}
     <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}" />
     <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}: {{ choice.votes }} votes</label><br />
 {% endfor %}
