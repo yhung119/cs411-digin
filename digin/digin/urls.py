@@ -16,10 +16,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls import include, url
+from django.views.generic.base import TemplateView # new
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('leads.urls')),
-    path('', include('frontend.urls')),
-	url(r'^polls/', include('polls.urls')),
+    # path('', include('leads.urls')),
+    # path('', include('frontend.urls')),
+	path('', include('polls.urls')),
+    path('users/', include('users.urls')),
+    path('users/', include('django.contrib.auth.urls')), # new
+
+    # path('', TemplateView.as_view(template_name='home.html'), name='home'), # new
+
 ]

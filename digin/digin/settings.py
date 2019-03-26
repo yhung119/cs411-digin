@@ -37,11 +37,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'leads', # new app
+    # 'leads', # new app
     'rest_framework',
-    'frontend',
+    'rest_framework.authtoken',
+    # 'frontend',
 	'django_mysql',
-	'polls.apps.PollsConfig',
+	'polls',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -56,10 +58,30 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'digin.urls'
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}
+
+AUTH_USER_MODEL = 'users.CustomUser'
+
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# SITE_ID = 1
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -81,23 +103,24 @@ WSGI_APPLICATION = 'digin.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        #'OPTIONS': {
-        #   'read_default_file': './digin/my.cnf',
-		#},
-		'USER' : 'root',
-		'PASSWORD' : '',
-		'NAME' : 'test',
-		'HOST' : 'localhost',
-		'PORT' : '3306',
-		'OPTIONS':{
-			'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-			'charset': 'utf8mb4',
-			'read_default_file': './digin/my.cnf',
+        'OPTIONS': {
+          'read_default_file': './digin/my.cnf',
+          'charset': 'utf8mb4',
 		},
-		'TEST': {
-			'CHARSET': 'utf8mb4',
-			'COLLATION': 'utf8mb4_unicode_ci',	
-		}
+		# 'USER' : 'yi',
+		# 'PASSWORD' : 'password',
+		# 'NAME' : 'test',
+		# 'HOST' : 'localhost',
+		# 'PORT' : '',
+		# 'OPTIONS':{
+		# 	'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+			
+		# 	'read_default_file': './digin/my.cnf',
+		# },
+		# 'TEST': {
+		# 	'CHARSET': 'utf8mb4',
+		# 	'COLLATION': 'utf8mb4_unicode_ci',	
+		# }
         
     }
 }

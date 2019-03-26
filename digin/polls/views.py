@@ -4,13 +4,23 @@ from django.urls import reverse
 from django.views import generic
 
 from .models import Choice, Question
+from django.contrib.auth.decorators import login_required
+from django.views.generic import TemplateView
+from django.utils import timezone
+from django.db import connection
 
+
+class HomePageView(TemplateView):
+    template_name = 'home.html'
 
 class IndexView(generic.ListView):
+    
     template_name = 'polls/index.html'
     context_object_name = 'latest_question_list'
-
+    
+    # @login_required
     def get_queryset(self):
+        # print(self.request.user)
         """Return the last five published questions."""
         return Question.objects.order_by('-pub_date')[:5]
 
@@ -18,6 +28,7 @@ class IndexView(generic.ListView):
 class DetailView(generic.DetailView):
     model = Question
     template_name = 'polls/detail.html'
+    
 
 
 class ResultsView(generic.DetailView):
@@ -27,6 +38,7 @@ class ResultsView(generic.DetailView):
 
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
+    
     try:
         selected_choice = question.choice_set.get(pk=request.POST['choice'])
     except (KeyError, Choice.DoesNotExist):
@@ -41,4 +53,32 @@ def vote(request, question_id):
         # Always return an HttpResponseRedirect after successfully dealing
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
-        return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+        return HttpResponseRedirect(reverse('polls:detail', args=(question.id,)))
+
+        
+def addChoice(request, question_id):
+    print("choice")
+    current_user=request.user
+    print(current_user.id)
+    question = get_object_or_404(Question, pk=question_id)
+    inp_value = request.POST.get('choice')
+
+    question = get_object_or_404(Question, pk=question_id)
+    question.choice_set.create(choice_text=inp_value,votes=0,owner=request.user)
+    return HttpResponseRedirect(reverse('polls:vote', args=(question.id,)))
+    
+def addQuestion(request):
+    print("question")
+    inp_value = request.POST.get('question')
+    print(request.user)
+    q = Question(question_text=inp_value,pub_date=timezone.now(),owner=request.user)
+    cursor.execute("INSERT INTO polls_question"
+                   "(password, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined, name)"
+                   "VALUES (%s, 0, %s, '', '', %s, 0, 1, NOW(), %s)",
+                   (make_password(validated_data["password"]), validated_data["username"], validated_data["email"], validated_data["name"])
+        )
+    # q.save()
+    return HttpResponseRedirect(reverse('polls:index'))
+
+def editQuestion(request):
+    pass
