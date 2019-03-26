@@ -28,13 +28,12 @@ class IndexView(generic.ListView):
 class DetailView(generic.DetailView):
     model = Question
     template_name = 'polls/detail.html'
-    
+
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)
         ## the context is a list of the tasks of the Project##
         ##THIS IS THE ERROR##
-        context['tasks'] = "tasks"
-
+        context['choices'] = Choice.objects.raw("SELECT * FROM polls_choice WHERE question_id = %s",[context["question"].id])
         return context
 
     
@@ -49,7 +48,10 @@ def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     
     try:
-        selected_choice = question.choice_set.get(pk=request.POST['choice'])
+        selected_choice = Choice.objects.filter(pk=request.POST['choice'])
+        print(type(selected_choice))
+        print(type(question.choice_set.get(pk=request.POST['choice'])))
+        #question.choice_set.get(pk=request.POST['choice'])
     except (KeyError, Choice.DoesNotExist):
         # Redisplay the question voting form.
         return render(request, 'polls/detail.html', {
@@ -57,40 +59,38 @@ def vote(request, question_id):
             'error_message': "You didn't select a choice.",
         })
     else:
-        selected_choice.votes += 1
-        selected_choice.save()
+        cursor = connection.cursor()
+        cursor.execute("UPDATE polls_choice SET votes = votes + 1 WHERE id=%s",
+                       [request.POST['choice']])
+        # selected_choice.votes += 1
+        # selected_choice.save()
         # Always return an HttpResponseRedirect after successfully dealing
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
-        return HttpResponseRedirect(reverse('polls:detail', args=(question.id,)))
+        return HttpResponseRedirect(reverse('polls:detail', args=(question_id,)))
 
         
 def addChoice(request, question_id):
     current_user=request.user
-    question = get_object_or_404(Question, pk=question_id)
     inp_value = request.POST.get('choice')
 
     question = get_object_or_404(Question, pk=question_id)
     question.choice_set.create(choice_text=inp_value,votes=0,owner=request.user)
-    return HttpResponseRedirect(reverse('polls:vote', args=(question.id,)))
+    return HttpResponseRedirect(reverse('polls:detail', args=(question.id,)))
     
 def addQuestion(request):
     print("question")
     inp_value = request.POST.get('question')
     print(request.user)
-    q = Question(question_text=inp_value,pub_date=timezone.now(),owner=request.user)
-    # cursor = connection.cursor()
-    # cursor.execute("INSERT INTO polls_question"
-    #                "(question_text, pub_date, owner_id)"
-    #                "VALUES (%s, NOW(), %s)",
-    #                (inp_value, request.user.id)
-    #                )
-    # cursor.execute("INSERT INTO polls_question"
-    #                "(password, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined, name)"
-    #                "VALUES (%s, 0, %s, '', '', %s, 0, 1, NOW(), %s)",
-    #                (make_password(validated_data["password"]), validated_data["username"], validated_data["email"], validated_data["name"])
-    #     )
-    q.save()
+    # q = Question(question_text=inp_value,pub_date=timezone.now(),owner=request.user)
+    cursor = connection.cursor()
+    cursor.execute("INSERT INTO polls_question"
+                   "(question_text, pub_date, owner_id)"
+                   "VALUES (%s, NOW(), %s)",
+                   (inp_value, request.user.id)
+                   )
+   
+    # q.save()
     return HttpResponseRedirect(reverse('polls:home'))
 
 def editQuestion(request):
