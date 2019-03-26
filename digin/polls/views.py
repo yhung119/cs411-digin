@@ -57,8 +57,10 @@ def vote(request, question_id):
             'error_message': "You didn't select a choice.",
         })
     else:
-        selected_choice.votes += 1
-        selected_choice.save()
+        # selected_choice.votes += 1
+        # selected_choice.save()
+        cursor = connection.cursor()
+        cursor.execute("UPDATE polls_choice SET votes = votes+1 WHERE id=%s", [request.POST['choice']])
         # Always return an HttpResponseRedirect after successfully dealing
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
@@ -71,26 +73,25 @@ def addChoice(request, question_id):
     inp_value = request.POST.get('choice')
 
     question = get_object_or_404(Question, pk=question_id)
-    question.choice_set.create(choice_text=inp_value,votes=0,owner=request.user)
-    return HttpResponseRedirect(reverse('polls:vote', args=(question.id,)))
+    cursor = connection.cursor()
+    cursor.execute("INSERT INTO polls_choice"
+                   "(choice_text, votes, owner_id, question_id)"
+                   "VALUES (%s, %s, %s, %s)",
+                   [inp_value, 0, request.user.id, question_id]
+                   )
+    # question.choice_set.create(choice_text=inp_value,votes=0,owner=request.user)
+    return HttpResponseRedirect(reverse('polls:detail', args=(question.id,)))
     
 def addQuestion(request):
     print("question")
     inp_value = request.POST.get('question')
     print(request.user)
-    q = Question(question_text=inp_value,pub_date=timezone.now(),owner=request.user)
-    # cursor = connection.cursor()
-    # cursor.execute("INSERT INTO polls_question"
-    #                "(question_text, pub_date, owner_id)"
-    #                "VALUES (%s, NOW(), %s)",
-    #                (inp_value, request.user.id)
-    #                )
-    # cursor.execute("INSERT INTO polls_question"
-    #                "(password, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined, name)"
-    #                "VALUES (%s, 0, %s, '', '', %s, 0, 1, NOW(), %s)",
-    #                (make_password(validated_data["password"]), validated_data["username"], validated_data["email"], validated_data["name"])
-    #     )
-    q.save()
+    cursor = connection.cursor()
+    cursor.execute("INSERT INTO polls_question"
+                   "(question_text, pub_date, owner_id)"
+                   "VALUES (%s, NOW(), %s)",
+                   (inp_value, request.user.id)
+                   )
     return HttpResponseRedirect(reverse('polls:home'))
 
 def editQuestion(request):
