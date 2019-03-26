@@ -101,26 +101,48 @@ WSGI_APPLICATION = 'digin.wsgi.application'
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
+    #'default': {
+    #    'ENGINE': 'django.db.backends.mysql',
+    #    'OPTIONS': {
+    #      'read_default_file': './digin/my.cnf',
+    #      'charset': 'utf8mb4',
+	#	},
+	#	
+	#	# 'USER' : 'yi',
+	#	# 'PASSWORD' : 'password',
+	#	# 'NAME' : 'test',
+	#	# 'HOST' : 'localhost',
+	#	# 'PORT' : '',
+	#	# 'OPTIONS':{
+	#	# 	'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+	#		
+	#	# 	'read_default_file': './digin/my.cnf',
+	#	# },
+	#	# 'TEST': {
+	#	# 	'CHARSET': 'utf8mb4',
+	#	# 	'COLLATION': 'utf8mb4_unicode_ci',	
+	#	# }
+    #    
+    #}
+	'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'OPTIONS': {
-          'read_default_file': './digin/my.cnf',
-          'charset': 'utf8mb4',
+        #'OPTIONS': {
+        #   'read_default_file': './digin/my.cnf',
+		#},
+		'USER' : 'root',
+		'PASSWORD' : '',
+		'NAME' : 'test1',
+		'HOST' : 'localhost',
+		'PORT' : '3306',
+		'OPTIONS':{
+			'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+			'charset': 'utf8mb4',
+			'read_default_file': './digin/my.cnf',
 		},
-		# 'USER' : 'yi',
-		# 'PASSWORD' : 'password',
-		# 'NAME' : 'test',
-		# 'HOST' : 'localhost',
-		# 'PORT' : '',
-		# 'OPTIONS':{
-		# 	'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-			
-		# 	'read_default_file': './digin/my.cnf',
-		# },
-		# 'TEST': {
-		# 	'CHARSET': 'utf8mb4',
-		# 	'COLLATION': 'utf8mb4_unicode_ci',	
-		# }
+		'TEST': {
+			'CHARSET': 'utf8mb4',
+			'COLLATION': 'utf8mb4_unicode_ci',	
+		}
         
     }
 }
