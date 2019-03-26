@@ -16,6 +16,7 @@ class Question(models.Model):
     eating_time = models.DateTimeField('eating time')
     deadline_time = models.DateTimeField('decision deadline')
     pub_date = models.DateTimeField('date published')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     
     def __str__(self):
         return self.question_text
