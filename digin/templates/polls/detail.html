@@ -2,6 +2,7 @@
 {% with edit=False %}     
 {% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
 
+
 {% if edit == False %}
 <form action="{% url 'polls:vote' question.id %}" method="post">
 {% csrf_token %}

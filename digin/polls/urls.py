@@ -5,7 +5,7 @@ from . import views
 
 app_name = 'polls'
 urlpatterns = [\
-    path('', views.HomePageView.as_view(), name='home'),
+    path('', views.IndexView.as_view(), name='home'),
     path('polls/', views.IndexView.as_view(), name="index"),
     # url(r'^$', views.IndexView.as_view(), name='index'),
     url(r'^addQuestion/$', views.addQuestion, name='addQuestion'),
