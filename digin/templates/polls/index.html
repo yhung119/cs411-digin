@@ -4,6 +4,14 @@
 {% if latest_question_list %}
     <ul>
     {% for question in latest_question_list %}
+		<form method="post" action="{% url 'polls:delQuestion' question.id %}" >
+			{% csrf_token %}
+			<input type="submit" value="x">
+		</form>
+		<form method="get" action="{% url 'polls:edit' question.id %}" >
+			{% csrf_token %}
+			<input type="submit" value="edit">
+		</form>
         <li><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a> created by {{ question.owner }}</li>
     {% endfor %}
     </ul>

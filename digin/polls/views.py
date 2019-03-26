@@ -11,7 +11,7 @@ from django.db import connection
 
 
 class HomePageView(TemplateView):
-    template_name = 'home.html'
+	template_name = 'home.html'
 
 class IndexView(generic.ListView):
     
@@ -36,13 +36,14 @@ class DetailView(generic.DetailView):
         context['choices'] = Choice.objects.raw("SELECT * FROM polls_choice WHERE question_id = %s",[context["question"].id])
         return context
 
-    
-
 
 class ResultsView(generic.DetailView):
-    model = Question
-    template_name = 'polls/results.html'
+	model = Question
+	template_name = 'polls/results.html'
 
+class EditView(generic.DetailView):
+	model = Question
+	template_name = 'polls/edit.html'
 
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
@@ -67,8 +68,7 @@ def vote(request, question_id):
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
         return HttpResponseRedirect(reverse('polls:detail', args=(question_id,)))
-
-        
+		
 def addChoice(request, question_id):
     current_user=request.user
     inp_value = request.POST.get('choice')
@@ -98,5 +98,24 @@ def addQuestion(request):
     # q.save()
     return HttpResponseRedirect(reverse('polls:home'))
 
-def editQuestion(request):
-    pass
+def delQuestion(request,question_id):
+	question = get_object_or_404(Question, pk=question_id)
+	question.delete()
+	print("delete")
+	return HttpResponseRedirect(reverse('polls:index'))
+	
+#def delChoice(request,choice_id,question_id):
+#	print("deleteChoice")
+#	question = get_object_or_404(Question, pk=question_id)
+#	choice = get_object_or_404(Choice, pk=choice_id)
+#	choice.delete()
+#	
+#	return HttpResponseRedirect(reverse('polls:vote', args=(question.id,)))
+#************goes in details.html
+#<form method="post" action="{% url 'polls:delChoice' choice.id question.id%}" >
+#	{% csrf_token %}
+#	<input type="submit" value="x">
+#</form>	
+def editQuestion(request,question_id):
+	question = get_object_or_404(Question, pk=question_id)
+	return HttpResponseRedirect(reverse('polls:edit', args=(question.id,)))
