@@ -1,6 +1,10 @@
 from polls.models import Question, Choice, User
-from rest_framework import viewsets, permissions
+from rest_framework import status, viewsets, permissions
 from .serializers import QuestionSerializer, ChoiceSerializer, UserSerializer
+from django.db import connection
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.exceptions import ValidationError
 from django.db import connection
 
 class QuestionViewSet(viewsets.ModelViewSet):
@@ -71,3 +75,25 @@ class UserViewSet(viewsets.ModelViewSet):
         permissions.AllowAny
     ]
     serializer_class = UserSerializer
+
+    @action(detail=True, methods=['put'])
+    def custom_put(self, request, pk=None):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            cursor = connection.cursor()
+            cursor.execute("UPDATE polls_user SET location = %s, email = %s, name = %s WHERE id = %s", 
+                [serializer.data['location'], serializer.data['email'], serializer.data['name'], pk])
+            return Response({'status': 'update set'})
+        else:
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['delete'])
+    def custom_delete(self, request, pk=None):
+        cursor = connection.cursor()
+        cursor.execute("SELECT * from polls_user WHERE id = %s", [pk])
+        if cursor.fetchone() == None:
+            raise ValidationError('no object to delete')
+        else:
+            cursor.execute("DELETE from polls_user WHERE id = %s", [pk])
+            return Response({'status': 'delete set'})
