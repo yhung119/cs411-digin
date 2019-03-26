@@ -17,4 +17,5 @@ urlpatterns = [\
 	url(r'^(?P<question_id>[0-9]+)/addChoice/$', views.addChoice, name='addChoice'),
 	
 	url(r'^(?P<pk>[0-9]+)/edit/$', views.EditView.as_view(), name='edit'),
+	url(r'^(?P<question_id>[0-9]+)/editQuestion/$', views.editQuestion, name='editQuestion'),
 ]
