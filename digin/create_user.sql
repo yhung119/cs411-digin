@@ -1,5 +1,4 @@
 BEGIN;
-USE digin;
 CREATE TABLE `users_customuser` (
     `id` integer AUTO_INCREMENT NOT NULL PRIMARY KEY, 
     `password` varchar(128) NOT NULL, 

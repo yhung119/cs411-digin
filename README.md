@@ -2,6 +2,14 @@ Added very basic polling system with vote counting based on the tutorial at http
 
 # CS411 Final Project - Digin
 
+## Set up database
+1. Create table: CREATE DATABASE db_name CHARACTER SET UTF8;
+2. run setup.sh
+    ```sh
+    chmod +x ./setup.sh
+    ./setup.sh
+    ```
+3. check if tables are created accordingly and application works
 ## Current Schema
 - user : UID, location, email, name, (later: pwd, authenticate)
 

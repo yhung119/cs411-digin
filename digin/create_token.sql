@@ -1,5 +1,4 @@
 BEGIN;
-USE digin;
 --
 -- Create model Token
 --

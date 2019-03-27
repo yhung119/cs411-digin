@@ -1,6 +1,4 @@
 BEGIN;
-USE digin;
-
 --
 -- Create model Question
 --
