@@ -118,4 +118,9 @@ def delQuestion(request,question_id):
 #</form>	
 def editQuestion(request,question_id):
 	question = get_object_or_404(Question, pk=question_id)
-	return HttpResponseRedirect(reverse('polls:edit', args=(question.id,)))
+	inp_value=request.POST.get('choice')
+	print(inp_value)
+	question.question_text=inp_value
+	print(question.question_text)
+	question.save()
+	return HttpResponseRedirect(reverse('polls:index'))
