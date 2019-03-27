@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views import generic
 
-from .models import Choice, Question
+from .models import Choice, Question, Vote
 from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
 from django.utils import timezone
@@ -51,12 +51,22 @@ def vote(request, question_id):
 			'error_message': "You didn't select a choice.",
 		})
 	else:
-		selected_choice.votes += 1
-		selected_choice.save()
-		# Always return an HttpResponseRedirect after successfully dealing
-		# with POST data. This prevents data from being posted twice if a
-		# user hits the Back button.
-		return HttpResponseRedirect(reverse('polls:detail', args=(question.id,)))
+		try:
+			Vote.objects.get(question=question, owner=request.user, choice=selected_choice)
+		except(Vote.DoesNotExist):	
+			selected_choice.votes += 1
+			selected_choice.save()
+			v=Vote(question=question,owner=request.user,choice=selected_choice)
+			v.save()
+			# Always return an HttpResponseRedirect after successfully dealing
+			# with POST data. This prevents data from being posted twice if a
+			# user hits the Back button.
+			return HttpResponseRedirect(reverse('polls:detail', args=(question.id,)))
+		else:
+			return render(request, 'polls/detail.html', {
+			'question': question,
+			'error_message': "You have already voted.",
+		})
 
 		
 def addChoice(request, question_id):
