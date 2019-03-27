@@ -69,12 +69,15 @@ def vote(request, question_id):
         })
     else:
         try:
-            Vote.objects.get(question=question, owner=request.user, choice=selected_choice[0])
-        except(Vote.DoesNotExist):	
+            # Vote.objects.get(question=question, owner=request.user, choice=selected_choice[0])
+            vote = Vote.objects.raw("SELECT * FROM polls_vote WHERE question_id=%s AND owner_id=%s AND choice_id=%s", [question.id, request.user.id, selected_choice[0].id])[0]
+            # print([question.id, request.user.id, selected_choice[0].id])
+        except (IndexError, Vote.DoesNotExist):
             cursor = connection.cursor()
             cursor.execute("UPDATE polls_choice SET votes = votes+1 WHERE id=%s", [request.POST['choice']])
-            v=Vote(question=question,owner=request.user,choice=selected_choice[0])
-            v.save()
+            cursor.execute("INSERT INTO polls_vote (question_id, owner_id, choice_id) VALUES (%s, %s, %s) ", [question.id, request.user.id, selected_choice[0].id])
+            # v=Vote(question=question,owner=request.user,choice=selected_choice[0])
+            # v.save()
             # Always return an HttpResponseRedirect after successfully dealing
             # with POST data. This prevents data from being posted twice if a
             # user hits the Back button.
@@ -115,7 +118,7 @@ def addQuestion(request):
                    )
     return HttpResponseRedirect(reverse('polls:home'))
 
-def delQuestion(request,question_id):
+def delQuestion(request, question_id):
     try:
         question = Question.objects.raw("SELECT * FROM polls_question WHERE id = %s", [question_id])[0]
     except Question.DoesNotExist:
@@ -145,5 +148,5 @@ def editQuestion(request,question_id):
         raise Http404("Question does not exist")
     inp_value=request.POST.get('choice')
     cursor = connection.cursor()
-    cursor.execute("UPDATE polls_question SET question_text = %s WHERE id=%s", [inp_value, question_id])
+    cursor.execute("UPDATE polls_question SET question_text = %s WHERE id=%s AND owner_id=%s", [inp_value, question_id, request.user.id])
     return HttpResponseRedirect(reverse('polls:index'))
