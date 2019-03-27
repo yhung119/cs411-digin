@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views import generic
 
-from .models import Choice, Question
+from .models import Choice, Question, Vote
 from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
 from django.utils import timezone
@@ -47,22 +47,13 @@ class EditView(generic.DetailView):
     template_name = 'polls/edit.html'
 
 def vote(request, question_id):
-    question = get_object_or_404(Question, pk=question_id)
-    question2 = Question.objects.raw("SELECT * FROM polls_question WHERE id = %s", [question_id])
-    cursor = connection.cursor()
-    cursor.execute("SELECT * FROM polls_question WHERE id = %s", [question_id])
-    print(type(cursor.fetchone()))
-    # try:
-    #     question = Question.objects.filter(val=RawSQL(
-    #     'SELECT * FROM polls_question WHERE id = %s',
-    #     [question_id]
-    # ))
-    # except Question.DoesNotExist:
-    #     raise Http404("No MyModel matches the given query.")
-
-    print(type(question))
-    print(type(question2))
-    print(type(question2[0]))
+    # question = get_object_or_404(Question, pk=question_id)
+    question = Question.objects.raw("SELECT * FROM polls_question WHERE id = %s", [question_id])[0]
+    choices_query = Choice.objects.raw("SELECT * FROM polls_choice WHERE question_id=%s", [question_id])
+    choices = []
+    for choice in choices_query:
+        choices.append(choice)
+    
     try:        
         selected_choice = Choice.objects.raw("SELECT * FROM polls_choice WHERE id=%s",[request.POST['choice']])
 
@@ -70,18 +61,29 @@ def vote(request, question_id):
         
         # Redisplay the question voting form.
         return render(request, 'polls/detail.html', {
-            'question': question2[0],
+            'question': question,
+            'choices': choices,
             'error_message': "You didn't select a choice.",
         })
     else:
-        # selected_choice.votes += 1
-        # selected_choice.save()
-        cursor = connection.cursor()
-        cursor.execute("UPDATE polls_choice SET votes = votes+1 WHERE id=%s", [request.POST['choice']])
-        # Always return an HttpResponseRedirect after successfully dealing
-        # with POST data. This prevents data from being posted twice if a
-        # user hits the Back button.
-        return HttpResponseRedirect(reverse('polls:detail', args=(question_id,)))
+        try:
+            Vote.objects.get(question=question, owner=request.user, choice=selected_choice[0])
+        except(Vote.DoesNotExist):	
+            cursor = connection.cursor()
+            cursor.execute("UPDATE polls_choice SET votes = votes+1 WHERE id=%s", [request.POST['choice']])
+            v=Vote(question=question,owner=request.user,choice=selected_choice[0])
+            v.save()
+            # Always return an HttpResponseRedirect after successfully dealing
+            # with POST data. This prevents data from being posted twice if a
+            # user hits the Back button.
+            return HttpResponseRedirect(reverse('polls:detail', args=(question.id,)))
+        else:
+            return render(request, 'polls/detail.html', {
+            'question': question,
+            'choices': choices,
+            'error_message': "You have already voted.",
+        })
+        
 
 def addChoice(request, question_id):
     current_user=request.user
