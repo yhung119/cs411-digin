@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
 from django.utils import timezone
 from django.db import connection
+from django.db.models.expressions import RawSQL
 
 
 class HomePageView(TemplateView):
@@ -47,16 +48,29 @@ class EditView(generic.DetailView):
 
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
-    
-    try:
-        selected_choice = Choice.objects.filter(pk=request.POST['choice'])
-        print(type(selected_choice))
-        print(type(question.choice_set.get(pk=request.POST['choice'])))
-        #question.choice_set.get(pk=request.POST['choice'])
+    question2 = Question.objects.raw("SELECT * FROM polls_question WHERE id = %s", [question_id])
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM polls_question WHERE id = %s", [question_id])
+    print(type(cursor.fetchone()))
+    # try:
+    #     question = Question.objects.filter(val=RawSQL(
+    #     'SELECT * FROM polls_question WHERE id = %s',
+    #     [question_id]
+    # ))
+    # except Question.DoesNotExist:
+    #     raise Http404("No MyModel matches the given query.")
+
+    print(type(question))
+    print(type(question2))
+    print(type(question2[0]))
+    try:        
+        selected_choice = Choice.objects.raw("SELECT * FROM polls_choice WHERE id=%s",[request.POST['choice']])
+
     except (KeyError, Choice.DoesNotExist):
+        
         # Redisplay the question voting form.
         return render(request, 'polls/detail.html', {
-            # 'question': question,
+            'question': question2[0],
             'error_message': "You didn't select a choice.",
         })
     else:
@@ -99,9 +113,13 @@ def addQuestion(request):
     return HttpResponseRedirect(reverse('polls:home'))
 
 def delQuestion(request,question_id):
-    question = get_object_or_404(Question, pk=question_id)
-    question.delete()
-    print("delete")
+    cursor = connection.cursor()
+
+    cursor.execute("DELETE FROM polls_question WHERE id=%s AND owner_id=%s",
+                    (question_id, request.user.id)
+        )
+
+
     return HttpResponseRedirect(reverse('polls:index'))
     
 #def delChoice(request,choice_id,question_id):
