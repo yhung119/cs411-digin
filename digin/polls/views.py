@@ -38,12 +38,12 @@ class DetailView(generic.DetailView):
 
 
 class ResultsView(generic.DetailView):
-	model = Question
-	template_name = 'polls/results.html'
+    model = Question
+    template_name = 'polls/results.html'
 
 class EditView(generic.DetailView):
-	model = Question
-	template_name = 'polls/edit.html'
+    model = Question
+    template_name = 'polls/edit.html'
 
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
@@ -68,7 +68,7 @@ def vote(request, question_id):
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button.
         return HttpResponseRedirect(reverse('polls:detail', args=(question_id,)))
-		
+
 def addChoice(request, question_id):
     current_user=request.user
     inp_value = request.POST.get('choice')
@@ -99,28 +99,28 @@ def addQuestion(request):
     return HttpResponseRedirect(reverse('polls:home'))
 
 def delQuestion(request,question_id):
-	question = get_object_or_404(Question, pk=question_id)
-	question.delete()
-	print("delete")
-	return HttpResponseRedirect(reverse('polls:index'))
-	
+    question = get_object_or_404(Question, pk=question_id)
+    question.delete()
+    print("delete")
+    return HttpResponseRedirect(reverse('polls:index'))
+    
 #def delChoice(request,choice_id,question_id):
-#	print("deleteChoice")
-#	question = get_object_or_404(Question, pk=question_id)
-#	choice = get_object_or_404(Choice, pk=choice_id)
-#	choice.delete()
-#	
-#	return HttpResponseRedirect(reverse('polls:vote', args=(question.id,)))
+#   print("deleteChoice")
+#   question = get_object_or_404(Question, pk=question_id)
+#   choice = get_object_or_404(Choice, pk=choice_id)
+#   choice.delete()
+#   
+#   return HttpResponseRedirect(reverse('polls:vote', args=(question.id,)))
 #************goes in details.html
 #<form method="post" action="{% url 'polls:delChoice' choice.id question.id%}" >
-#	{% csrf_token %}
-#	<input type="submit" value="x">
-#</form>	
+#   {% csrf_token %}
+#   <input type="submit" value="x">
+#</form>    
 def editQuestion(request,question_id):
-	question = get_object_or_404(Question, pk=question_id)
-	inp_value=request.POST.get('choice')
-	print(inp_value)
-	question.question_text=inp_value
-	print(question.question_text)
-	question.save()
-	return HttpResponseRedirect(reverse('polls:index'))
+    question = get_object_or_404(Question, pk=question_id)
+    inp_value=request.POST.get('choice')
+    print(inp_value)
+    question.question_text=inp_value
+    print(question.question_text)
+    question.save()
+    return HttpResponseRedirect(reverse('polls:index'))
