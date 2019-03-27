@@ -118,9 +118,7 @@ def delQuestion(request,question_id):
     cursor = connection.cursor()
 
     cursor.execute("DELETE FROM polls_question WHERE id=%s AND owner_id=%s",
-                    (question_id, request.user.id)
-        )
-
+                    (question_id, request.user.id))
 
     return HttpResponseRedirect(reverse('polls:index'))
     
@@ -135,7 +133,8 @@ def delQuestion(request,question_id):
 #<form method="post" action="{% url 'polls:delChoice' choice.id question.id%}" >
 #   {% csrf_token %}
 #   <input type="submit" value="x">
-#</form>    
+#</form>
+
 def editQuestion(request,question_id):
     question = get_object_or_404(Question, pk=question_id)
     inp_value=request.POST.get('choice')
