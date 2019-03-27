@@ -11,7 +11,7 @@ from django.db import connection
 
 
 class HomePageView(TemplateView):
-	template_name = 'home.html'
+    template_name = 'home.html'
 
 class IndexView(generic.ListView):
     
