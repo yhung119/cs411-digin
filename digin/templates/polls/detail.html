@@ -1,17 +1,59 @@
-<h1>{{ question.question_text }}</h1>
-{% with edit=False %}     
-{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
-<h1>{{ question.pub_date }}</h1>
+{% extends 'base.html' %}
+{% block content %}
+<head>
+<style>
+body {
+    background:#a2b9bc
+}
+.navbar-brand {
+    font-family: 'Satisfy', cursive;
+}
+.vote {
+  text-align: center;
+}
+input[type=submit] {
+  background-color:#878f99;
+  border: none;
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 20px;
+}
+input[type=choice] {
+  background-color:#878f99;
+  border: none;
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 20px;
+}
 
+</style>
+</head>
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+    	<div class="collapse navbar-collapse">
+    		<div class = "navbar-brand" >{{ question.question_text }}</div>
+    		<div class = "navbar-brand navbar-right">{{ question.pub_date }}</h1></div>
+    		<span class = "navbar-brand navbar-right " ><a href="{% url 'polls:home' %}"><span class="glyphicon glyphicon-off" aria-hidden="true"></span></a></span>
+    	</div>
+	</div>
+</nav>
+{% with edit=False %}     
+{% if error_message %}<p class="vote"><strong>{{ error_message }}</strong></p>{% endif %}
 
 {% if edit == False %}
 <form action="{% url 'polls:vote' question.id %}" method="post">
+<div class="vote">
 {% csrf_token %}
 {% for choice in choices %}
     <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}" />
     <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}: {{ choice.votes }} votes</label><br />
 {% endfor %}
+<div class="vote">
 <input type="submit" value="Vote" />
+</div>
+</div>
 </form>
 {% else %}
 <h1> hi </h1>
@@ -21,8 +63,12 @@
 
 
 <form method="post" action="{% url 'polls:addChoice' question.id %}" >
+<div class="vote">
 {% csrf_token %}
     <input id="choice" type="text" name="choice" value="{{ choice }}" maxlength="200">
     <input type="submit" value="Add Choice">
+</vote>
 </form>
+
+{% endblock %}
 

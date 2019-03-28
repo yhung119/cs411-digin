@@ -1,5 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<head>
+<style>
+.navbar-brand {
+	font-family: 'Satisfy', cursive;
+}
+body {
+    background:#a2b9bc
+}
+.save {
+    text-align: center;
+}
+input[type=submit] {
+  background-color:#878f99;
+  border: none;
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 20px;
+}
+</style>
+</head>
+<nav class="navbar navbar-inverse" id="somebar">
+    <div class="container-fluid">
+    	<div class="collapse navbar-collapse">
+    		<span><a class="navbar-brand" href="{% url 'polls:home' %}">Digin</a></span>
+    		<span class = "navbar-brand navbar-right " ><a href="{% url 'logout' %}"><span class="glyphicon glyphicon-off" aria-hidden="true"></span></a></span>
+    	</div>
+	</div>
+</nav>
 <form method="post" action="{% url 'polls:editQuestion' question.id %}" >
-{% csrf_token %}
-    <input id="choice" type="text" name="choice" value="{{ question.question_text }}" maxlength="200">
+	<div class="save">
+	{% csrf_token %}
+    <input id="choice" type="text" name="choice" value="{{ question.question_text }}" maxlength="
+    200">
     <input type="submit" value="Save">
+	</div>
 </form>
+{% endblock %}
