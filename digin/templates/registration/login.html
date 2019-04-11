@@ -1,5 +1,7 @@
 <!-- templates/registration/login.html -->
 
+{% extends 'home.html' %}
+{% block register %} 
 
 <h2>Login</h2>
 <form method="post">
@@ -7,3 +9,4 @@
   {{ form.as_p }}
   <button type="submit">Login</button>
 </form>
+{% endblock %}

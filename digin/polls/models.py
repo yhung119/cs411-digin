@@ -9,11 +9,15 @@ class Question(models.Model):
 	question_text = models.CharField(max_length=200)
 	pub_date = models.DateTimeField('date published')
 	owner =  models.ForeignKey(User, on_delete=models.CASCADE)
-	# voterList=models.TextField(null=True)
+	deadline = models.DateTimeField('deadline time')
 
 	def __str__(self):
 		return self.question_text
-	
+
+class Poll_members(models.Model):
+	question = models.ForeignKey(Question, on_delete=models.CASCADE)
+	member = models.ForeignKey(User, on_delete=models.CASCADE)
+
 	
 class Choice(models.Model):
 	'''
