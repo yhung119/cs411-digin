@@ -18,4 +18,7 @@ urlpatterns = [\
     
     url(r'^(?P<pk>[0-9]+)/edit/$', views.EditView.as_view(), name='edit'),
     url(r'^(?P<question_id>[0-9]+)/editQuestion/$', views.editQuestion, name='editQuestion'),
+
+    url(r'^(?P<pk>[0-9]+)/add/$', views.AddUserView.as_view(), name='add'),
+    url(r'^(?P<question_id>[0-9]+)/addUser/$', views.addUser, name='addUserAPI'),
 ]

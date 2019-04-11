@@ -4,7 +4,8 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views import generic
 
-from .models import Choice, Question, Vote
+from .models import Choice, Question, Vote, Poll_members
+from users.models import CustomUser
 from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
 from django.utils import timezone
@@ -24,7 +25,13 @@ class IndexView(generic.ListView):
     def get_queryset(self):
         # print(self.request.user)
         """Return the last five published questions."""
-        return Question.objects.raw("SELECT * FROM polls_question ORDER BY pub_date DESC")
+        if self.request.user.is_anonymous:
+            return None
+        user_polls = Poll_members.objects.filter(member=self.request.user)
+        
+        question_ids = [poll.question.id for poll in user_polls]
+        # print(question_ids)
+        return Question.objects.filter(pk__in=question_ids)#Question.objects.raw("SELECT * FROM polls_question ORDER BY pub_date DESC")
 
 
 class DetailView(generic.DetailView):
@@ -46,6 +53,11 @@ class ResultsView(generic.DetailView):
 class EditView(generic.DetailView):
     model = Question
     template_name = 'polls/edit.html'
+
+class AddUserView(generic.DetailView):
+    model = Question
+    template_name = 'polls/adduser.html'
+
 
 def vote(request, question_id):
     try:
@@ -90,32 +102,35 @@ def vote(request, question_id):
             })
 
 def addChoice(request, question_id):
-    current_user=request.user
-    inp_value = request.POST.get('choice')
-
-    try:
-        question = Question.objects.raw("SELECT * FROM polls_question WHERE id = %s", [question_id])[0]
-    except Question.DoesNotExist:
-        raise Http404("Question does not exist")
-    cursor = connection.cursor()
-    cursor.execute("INSERT INTO polls_choice"
-                   "(choice_text, votes, owner_id, question_id)"
-                   "VALUES (%s, %s, %s, %s)",
-                   [inp_value, 0, request.user.id, question_id]
-                   )
-    # question.choice_set.create(choice_text=inp_value,votes=0,owner=request.user)
-    return HttpResponseRedirect(reverse('polls:detail', args=(question.id,)))
-    
+	current_user=request.user
+	inp_value = request.POST.get('choice')
+	inp_address=request.POST.get('address')
+	print(inp_address);
+	try:
+		question = Question.objects.raw("SELECT * FROM polls_question WHERE id = %s", [question_id])[0]
+	except Question.DoesNotExist:
+		raise Http404("Question does not exist")
+	cursor = connection.cursor()
+	cursor.execute("INSERT INTO polls_choice"
+				"(choice_text, votes, owner_id, question_id)"
+				"VALUES (%s, %s, %s, %s)",
+				[inp_value, 0, request.user.id, question_id]
+				)
+	# question.choice_set.create(choice_text=inp_value,votes=0,owner=request.user)
+	return HttpResponseRedirect(reverse('polls:detail', args=(question.id,)))
+	
 def addQuestion(request):
     inp_value = request.POST.get('question')
-    # q = Question(question_text=inp_value,pub_date=timezone.now(),owner=request.user)
-    # q.save()
-    cursor = connection.cursor()
-    cursor.execute("INSERT INTO polls_question"
-                   "(question_text, pub_date, owner_id)"
-                   "VALUES (%s, NOW(), %s)",
-                   (inp_value, request.user.id)
-                   )
+    q = Question(question_text=inp_value,pub_date=timezone.now(),owner=request.user, deadline=timezone.now())
+    q.save()
+    poll_mem = Poll_members(member=request.user, question=q)
+    poll_mem.save()
+    # cursor = connection.cursor()
+    # cursor.execute("INSERT INTO polls_question"
+    #                "(question_text, pub_date, owner_id, deadline)"
+    #                "VALUES (%s, NOW(), %s, %s)",
+    #                (inp_value, request.user.id)
+    #                )
     return HttpResponseRedirect(reverse('polls:home'))
 
 def delQuestion(request, question_id):
@@ -149,4 +164,29 @@ def editQuestion(request,question_id):
     inp_value=request.POST.get('choice')
     cursor = connection.cursor()
     cursor.execute("UPDATE polls_question SET question_text = %s WHERE id=%s AND owner_id=%s", [inp_value, question_id, request.user.id])
+    return HttpResponseRedirect(reverse('polls:index'))
+
+
+def addUser(request, question_id):
+    """
+    TODO:
+        make sure duplicate is not added. Either fixed it on the database level or 
+        implement on API.
+
+    """
+    user = request.user
+    inp_value = request.POST.get('name')
+    
+
+    member_id = CustomUser.objects.filter(name=inp_value)
+    question = Question.objects.get(id=question_id)
+
+    # checking that onwer is not adding himself or user doesn't exist
+    if (len(member_id) != 1 or Poll_members.objects.filter(member=member_id[0], question=question).exists()):
+        return HttpResponseRedirect(reverse('polls:index'))
+    
+    new_member = Poll_members(member=member_id[0], question=question)
+    
+    new_member.save()
+    
     return HttpResponseRedirect(reverse('polls:index'))

@@ -41,8 +41,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     # 'frontend',
-    'django_mysql',
-    'polls',
+	'django_mysql',
+	'polls',
     'users',
 ]
 
@@ -106,44 +106,44 @@ DATABASES = {
     #    'OPTIONS': {
     #      'read_default_file': './digin/my.cnf',
     #      'charset': 'utf8mb4',
-    #   },
-    #   
-    #   # 'USER' : 'yi',
-    #   # 'PASSWORD' : 'password',
-    #   # 'NAME' : 'test',
-    #   # 'HOST' : 'localhost',
-    #   # 'PORT' : '',
-    #   # 'OPTIONS':{
-    #   #   'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-    #       
-    #   #   'read_default_file': './digin/my.cnf',
-    #   # },
-    #   # 'TEST': {
-    #   #   'CHARSET': 'utf8mb4',
-    #   #   'COLLATION': 'utf8mb4_unicode_ci',  
-    #   # }
+	#	},
+	#	
+	#	# 'USER' : 'yi',
+	#	# 'PASSWORD' : 'password',
+	#	# 'NAME' : 'test',
+	#	# 'HOST' : 'localhost',
+	#	# 'PORT' : '',
+	#	# 'OPTIONS':{
+	#	# 	'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+	#		
+	#	# 	'read_default_file': './digin/my.cnf',
+	#	# },
+	#	# 'TEST': {
+	#	# 	'CHARSET': 'utf8mb4',
+	#	# 	'COLLATION': 'utf8mb4_unicode_ci',	
+	#	# }
     #    
     #}
-    'default': {
+	'default': {
         'ENGINE': 'django.db.backends.mysql',
         'OPTIONS': {
           'read_default_file': './digin/my.cnf',
           'charset': 'utf8mb4',
-        },
-        # 'USER' : 'root',
-        # 'PASSWORD' : '',
-        # 'NAME' : 'test1',
-        # 'HOST' : 'localhost',
-        # 'PORT' : '3306',
-        # 'OPTIONS':{
-        #   'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        #   'charset': 'utf8mb4',
-        #   'read_default_file': './digin/my.cnf',
-        # },
-        # 'TEST': {
-        #   'CHARSET': 'utf8mb4',
-        #   'COLLATION': 'utf8mb4_unicode_ci',  
-        # }
+		},
+		# 'USER' : 'root',
+		# 'PASSWORD' : '',
+		# 'NAME' : 'test1',
+		# 'HOST' : 'localhost',
+		# 'PORT' : '3306',
+		# 'OPTIONS':{
+		# 	'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+		# 	'charset': 'utf8mb4',
+		# 	'read_default_file': './digin/my.cnf',
+		# },
+		# 'TEST': {
+		# 	'CHARSET': 'utf8mb4',
+		# 	'COLLATION': 'utf8mb4_unicode_ci',	
+		# }
         
     }
 }

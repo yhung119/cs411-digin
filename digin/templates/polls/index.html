@@ -26,25 +26,40 @@ input[type=submit] {
 </head>
 {% if latest_question_list %}
     <body>
+
     <ul>
     {% for question in latest_question_list %}
-        <form method="post" action="{% url 'polls:delQuestion' question.id %}" >
-        <div class="x">
-            {% csrf_token %}
-            <i class="glyphicon glyphicon-remove-circle"></i>
-            <input type="submit" value="x">
-        </div>
-        </form>
+        
 
-        <form method="get" action="{% url 'polls:edit' question.id %}" >
+        <li style="list-style: none;" class = "y">
+            <a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a> created by {{ question.owner }}
+            {% if user == question.owner %}
+            <form method="post" action="{% url 'polls:delQuestion' question.id %}" >
             <div class="x">
-            {% csrf_token %}
-            <i class="glyphicon glyphicon-pencil"></i>
-            <input type="submit" value="edit">
+                {% csrf_token %}
+                <i class="glyphicon glyphicon-remove-circle"></i>
+                <input type="submit" value="x">
             </div>
-        </form>
+            </form>
+            
+            <form method="get" action="{% url 'polls:edit' question.id %}" >
+                <div class="x">
+                {% csrf_token %}
+                <i class="glyphicon glyphicon-pencil"></i>
+                <input type="submit" value="edit">
+                </div>
+            </form>
 
-        <li style="list-style: none;" class = "y"><a href="{% url 'polls:detail' question.id %}">{{ question.question_text }}</a> created by {{ question.owner }}</li>
+
+            <form method="get" action="{% url 'polls:add' question.id %}" >
+                <div class="x">
+                {% csrf_token %}
+                <i class="glyphicon glyphicon-pencil"></i>
+                <input type="submit" value="add user">
+                </div>
+            </form>
+            {% endif %}
+        </li>
     {% endfor %}
     </ul>
     </body>
