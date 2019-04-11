@@ -64,11 +64,37 @@ input[type=choice] {
 
 <form method="post" action="{% url 'polls:addChoice' question.id %}" >
 <div class="vote">
+
 {% csrf_token %}
-    <input id="choice" type="text" name="choice" value="{{ choice }}" maxlength="200">
+    <input id="choice" type="text" name="choice" value="{{ choice }}" maxlength="200" style="width:200px">
+	<input id="address" type="hidden" name="address" value="" maxlength="200">
     <input type="submit" value="Add Choice">
+	
 </vote>
+<script>
+	var autocomplete;
+	function activatePlacesSearch(){
+		var sessionToken = new google.maps.places.AutocompleteSessionToken();
+		var input = document.getElementById('choice');
+		var options={types:['establishment']};
+		autocomplete=new google.maps.places.Autocomplete(input,options);
+		autocomplete.addListener('place_changed',onPlaceChanged);
+	}
+	function onPlaceChanged(){
+		var place=autocomplete.getPlace();
+		var inp_address=document.getElementById("address");
+		inp_address.value=place.formatted_address;
+		var inp_choice=document.getElementById("choice");
+		choice.value=place.name;
+		console.log(place.formatted_address);
+	}
+</script>
+	
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAQs1AhWqKf-H-TNVh6j1moFjTwBfAn97s&libraries=places&callback=activatePlacesSearch"></script>
+
 </form>
 
 {% endblock %}
+
+
 
