@@ -39,10 +39,8 @@ input[type=choice] {
     	</div>
 	</div>
 </nav>
-{% with edit=False %}     
 {% if error_message %}<p class="vote"><strong>{{ error_message }}</strong></p>{% endif %}
 
-{% if edit == False %}
 <form action="{% url 'polls:vote' question.id %}" method="post">
 <div class="vote">
 {% csrf_token %}
@@ -51,15 +49,11 @@ input[type=choice] {
     <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}: {{ choice.votes }} votes</label><br />
 {% endfor %}
 <div class="vote">
-<input type="submit" value="Vote" />
+<input type="submit" value="Vote" name="Vote"/>
+<input type="submit" value="Delete" name="Delete"/>
 </div>
 </div>
 </form>
-{% else %}
-<h1> hi </h1>
-{% endif %}
-
-{% endwith %}
 
 
 <form method="post" action="{% url 'polls:addChoice' question.id %}" >
