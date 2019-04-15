@@ -70,6 +70,7 @@ input[type=submit] {
     <div class="x">
     {% csrf_token %}
     <input id="question" type="text" name="question" value="{{ question }}" maxlength="200">
+    <input type="datetime-local" name="deadline">
     <input type="submit" value="Add Question" name="add">
     </div>
 </form>

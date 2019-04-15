@@ -105,7 +105,6 @@ def addChoice(request, question_id):
 	current_user=request.user
 	inp_value = request.POST.get('choice')
 	inp_address=request.POST.get('address')
-	print(inp_address);
 	try:
 		question = Question.objects.raw("SELECT * FROM polls_question WHERE id = %s", [question_id])[0]
 	except Question.DoesNotExist:
@@ -121,7 +120,9 @@ def addChoice(request, question_id):
 	
 def addQuestion(request):
     inp_value = request.POST.get('question')
-    q = Question(question_text=inp_value,pub_date=timezone.now(),owner=request.user, deadline=timezone.now())
+    deadline = request.POST.get('deadline')
+    
+    q = Question(question_text=inp_value,pub_date=timezone.now(),owner=request.user, deadline=deadline)
     q.save()
     poll_mem = Poll_members(member=request.user, question=q)
     poll_mem.save()
