@@ -44,8 +44,13 @@ input[type=choice] {
 {% if error_message %}<p class="vote"><strong>{{ error_message }}</strong></p>{% endif %}
 
 {% if question.is_active == False %}
-<h1> end of poll. The winner was {{winner.choice_text}}</h1>
+	
+
+		<h1> end of poll. The winner was {{winner.choice_text}}</h1>
+	
+
 {% else %}
+
 <h1>Deadline: {{ question.deadline }}</h1>
 <p id="demo"></p>
 
@@ -76,7 +81,23 @@ input[type=choice] {
 </vote>
 <script>
 	var deadline = "{{question.deadline}}";
-	var countDownDate = new Date(deadline.substring(0, deadline.length-5)+":00:00").getTime();
+	// April 16, 2019, 1 p.m.
+	var deadline_date_list = deadline.split(",")
+	var date = deadline_date_list[0];
+	var year = deadline_date_list[1];
+	var time = deadline_date_list[2];
+	var digit = time.split(" ");
+	var hour = digit[1].split(":")[0];
+	var minute = ""
+	if (digit[1].split(":").length > 1){
+		minute = digit[1].split(":")[1];
+	}
+	if (digit[2] == "p.m."){
+		hour = (parseInt(hour)+12).toString();
+	}
+	// console.log(date+ " " + year + " " + hour + ":" + minute + ":00:00");
+	var countDownDate = new Date(date+ " " + year + " " + hour + ":" + minute + ":00:00").getTime();
+	
 	var x = setInterval(function() {
 
 		// Get todays date and time

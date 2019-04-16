@@ -61,21 +61,21 @@ class DetailView(generic.DetailView):
             
             winning_choices = []
 
+
             for key, val in choices.items():
                 if (val == max_vote):
                     winning_choices.append(key)
             
+            if len(winning_choices) == 0:
+                context["question"].save()
+                return context
+
             winning_choice = winning_choices[random.randint(0,len(winning_choices)-1)]
             arch_question = Archive_question(question=context["question"], best_choice=Choice.objects.get(id=winning_choice))
             arch_question.save()
             context["winner"] = Choice.objects.get(id=winning_choice)
             context["question"].save()
         
-
-        # context["question"].is_active=True
-        # context["question"].save()
-
-
         # print(context["question"].deadline - timezone.now() > 0)
         ## the context is a list of the tasks of the Project##
         ##THIS IS THE ERROR##
