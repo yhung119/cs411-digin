@@ -60,7 +60,9 @@ input[type=choice] {
 
 {% csrf_token %}
     <input id="choice" type="text" name="choice" value="{{ choice }}" maxlength="200" style="width:200px">
-	<input id="address" type="hidden" name="address" value="" maxlength="200">
+	  <input id="address" type="hidden" name="address" value="" maxlength="200">
+    <input id="phone" type="hidden" name="phone" value="" maxlength="200">
+    <input id="placeId" type="hidden" name="placeId" value="" maxlength="200">
     <input type="submit" value="Add Choice">
 	
 </vote>
@@ -77,7 +79,13 @@ input[type=choice] {
 		var place=autocomplete.getPlace();
 		var inp_address=document.getElementById("address");
 		inp_address.value=place.formatted_address;
-		var inp_choice=document.getElementById("choice");
+    var inp_phone=document.getElementById("phone");
+    inp_phone.value=place.formatted_phone_number;
+    var inp_place_id=document.getElementById("placeId");
+    inp_place_id.value=place.place_id;
+    console.log(place);
+    console.log(place.place_id);
+    var inp_choice=document.getElementById("choice");
 		choice.value=place.name;
 		console.log(place.formatted_address);
 	}
