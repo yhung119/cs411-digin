@@ -14,7 +14,7 @@ from django.db.models.expressions import RawSQL
 from django.utils.timesince import timesince
 import collections
 import random
-
+from .review_views import get_wordcloud
 
 class HomePageView(TemplateView):
     template_name = 'home.html'
@@ -36,44 +36,56 @@ class IndexView(generic.ListView):
         # print(question_ids)
         return Question.objects.filter(pk__in=question_ids)#Question.objects.raw("SELECT * FROM polls_question ORDER BY pub_date DESC")
 
+def get_winning_choice(question_id):
+    '''
+    returns the winning chocie of the given question
+    saves the winning choice to arcieve question table
+    
+    TODO:
+        handle the case when there is no vote in that question
+    '''
+    # get the votes
+    votes = Vote.objects.filter(question_id=question_id)
+
+    # calcuate the choices with highest vote
+    choices = collections.defaultdict(int)
+    max_vote = 0
+    for vote in votes:
+        choices[vote.choice_id] += 1
+        if (max_vote < choices[vote.choice_id]):
+            max_vote = choices[vote.choice_id]
+    
+    winning_choices = []
+
+    for key, val in choices.items():
+        if (val == max_vote):
+            winning_choices.append(key)
+    question = Question.objects.get(id=question_id)
+    winning_choice = winning_choices[random.randint(0,len(winning_choices)-1)]
+    arch_question = Archive_question(question=question, best_choice=Choice.objects.get(id=winning_choice))
+    arch_question.save()
+    return Choice.objects.get(id=winning_choice)
 
 class DetailView(generic.DetailView):
+    '''
+    view that shows the choices of each question
+
+    '''
     model = Question
     template_name = 'polls/detail.html'
 
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)
         context['choices'] = Choice.objects.raw("SELECT * FROM polls_choice WHERE question_id = %s",[context["question"].id])
-
+        context['img_url'] = get_wordcloud(restaurant_id = 2)
         if context["question"].is_active is False:
             context["winner"] = Choice.objects.get(id=Archive_question.objects.get(question=context["question"]).best_choice.id)
             return context
 
         if context["question"].deadline < timezone.now():
             context["question"].is_active=False
-            votes = Vote.objects.filter(question_id=context["question"].id)
-            choices = collections.defaultdict(int)
-            max_vote = 0
-            for vote in votes:
-                choices[vote.choice_id] += 1
-                if (max_vote < choices[vote.choice_id]):
-                    max_vote = choices[vote.choice_id]
-            
-            winning_choices = []
-
-
-            for key, val in choices.items():
-                if (val == max_vote):
-                    winning_choices.append(key)
-            
-            if len(winning_choices) == 0:
-                context["question"].save()
-                return context
-
-            winning_choice = winning_choices[random.randint(0,len(winning_choices)-1)]
-            arch_question = Archive_question(question=context["question"], best_choice=Choice.objects.get(id=winning_choice))
-            arch_question.save()
-            context["winner"] = Choice.objects.get(id=winning_choice)
+            winner = get_winning_choice(context["question"].id)
+            context["winner"] = winner
             context["question"].save()
         
         # print(context["question"].deadline - timezone.now() > 0)
@@ -82,6 +94,7 @@ class DetailView(generic.DetailView):
         
         
         return context
+
 
 
 class ResultsView(generic.DetailView):
@@ -95,6 +108,7 @@ class EditView(generic.DetailView):
 class AddUserView(generic.DetailView):
     model = Question
     template_name = 'polls/adduser.html'
+
 
 
 def vote(request, question_id):
