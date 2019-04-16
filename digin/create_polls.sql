@@ -46,5 +46,19 @@ CREATE TABLE `polls_vote` (
         ON DELETE CASCADE
 );
 
+
+
+CREATE TABLE `polls_poll_members` (
+    `id` int AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `member_id` int NOT NULL,
+    `question_id` int NOT NULL,
+    FOREIGN KEY (`question_id`) 
+        REFERENCES `polls_question` (`id`) 
+        ON DELETE CASCADE,
+        FOREIGN KEY (`member_id`) 
+        REFERENCES `users_customuser` (`id`) 
+        ON DELETE CASCADE
+
+)
 COMMIT;
 

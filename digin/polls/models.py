@@ -10,10 +10,12 @@ class Question(models.Model):
 	pub_date = models.DateTimeField('date published')
 	owner =  models.ForeignKey(User, on_delete=models.CASCADE)
 	deadline = models.DateTimeField('deadline time')
+	is_active = models.BooleanField()
 
 	def __str__(self):
 		return self.question_text
 
+	
 class Poll_members(models.Model):
 	question = models.ForeignKey(Question, on_delete=models.CASCADE)
 	member = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -30,7 +32,12 @@ class Choice(models.Model):
 
 	def __str__(self):
 		return self.choice_text
-		
+
+class Archive_question(models.Model):
+	question = models.ForeignKey(Question, on_delete=models.CASCADE)
+	best_choice = models.ForeignKey(Choice, on_delete=models.CASCADE)
+
+
 class Vote(models.Model):
 	question=models.ForeignKey(Question, on_delete=models.CASCADE)
 	owner= models.ForeignKey(User, on_delete=models.CASCADE)

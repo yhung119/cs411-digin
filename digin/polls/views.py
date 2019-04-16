@@ -4,13 +4,16 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views import generic
 
-from .models import Choice, Question, Vote, Poll_members
+from .models import Choice, Question, Vote, Poll_members, Archive_question
 from users.models import CustomUser
 from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
 from django.utils import timezone
 from django.db import connection
 from django.db.models.expressions import RawSQL
+from django.utils.timesince import timesince
+import collections
+import random
 
 
 class HomePageView(TemplateView):
@@ -40,9 +43,44 @@ class DetailView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)
+        context['choices'] = Choice.objects.raw("SELECT * FROM polls_choice WHERE question_id = %s",[context["question"].id])
+
+        if context["question"].is_active is False:
+            context["winner"] = Choice.objects.get(id=Archive_question.objects.get(question=context["question"]).best_choice.id)
+            return context
+            
+        if context["question"].deadline > timezone.now():
+            context["question"].is_active=False
+            votes = Vote.objects.filter(question_id=context["question"].id)
+            choices = collections.defaultdict(int)
+            max_vote = 0
+            for vote in votes:
+                choices[vote.choice_id] += 1
+                if (max_vote < choices[vote.choice_id]):
+                    max_vote = choices[vote.choice_id]
+            
+            winning_choices = []
+
+            for key, val in choices.items():
+                if (val == max_vote):
+                    winning_choices.append(key)
+            
+            winning_choice = winning_choices[random.randint(0,len(winning_choices)-1)]
+            arch_question = Archive_question(question=context["question"], best_choice=Choice.objects.get(id=winning_choice))
+            arch_question.save()
+            context["winner"] = Choice.objects.get(id=winning_choice)
+            context["question"].save()
+        
+
+        # context["question"].is_active=True
+        # context["question"].save()
+
+
+        # print(context["question"].deadline - timezone.now() > 0)
         ## the context is a list of the tasks of the Project##
         ##THIS IS THE ERROR##
-        context['choices'] = Choice.objects.raw("SELECT * FROM polls_choice WHERE question_id = %s",[context["question"].id])
+        
+        
         return context
 
 
@@ -126,8 +164,7 @@ def addChoice(request, question_id):
 def addQuestion(request):
     inp_value = request.POST.get('question')
     deadline = request.POST.get('deadline')
-    
-    q = Question(question_text=inp_value,pub_date=timezone.now(),owner=request.user, deadline=deadline)
+    q = Question(question_text=inp_value,pub_date=timezone.now(),owner=request.user, deadline=deadline, is_active=True)
     q.save()
     poll_mem = Poll_members(member=request.user, question=q)
     poll_mem.save()
