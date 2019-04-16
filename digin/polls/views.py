@@ -11,10 +11,14 @@ from django.views.generic import TemplateView
 from django.utils import timezone
 from django.db import connection
 from django.db.models.expressions import RawSQL
+
 from django.utils.timesince import timesince
 import collections
 import random
 from .review_views import get_wordcloud
+from .googleUtil import get_restaurant_attr
+import json
+
 
 class HomePageView(TemplateView):
     template_name = 'home.html'
@@ -159,22 +163,34 @@ def vote(request, question_id):
 				})
 
 def addChoice(request, question_id):
-	current_user=request.user
-	inp_value = request.POST.get('choice')
-	inp_address=request.POST.get('address')
-	try:
-		question = Question.objects.raw("SELECT * FROM polls_question WHERE id = %s", [question_id])[0]
-	except Question.DoesNotExist:
-		raise Http404("Question does not exist")
-	cursor = connection.cursor()
-	cursor.execute("INSERT INTO polls_choice"
-				"(choice_text, votes, owner_id, question_id)"
-				"VALUES (%s, %s, %s, %s)",
-				[inp_value, 0, request.user.id, question_id]
-				)
-	# question.choice_set.create(choice_text=inp_value,votes=0,owner=request.user)
-	return HttpResponseRedirect(reverse('polls:detail', args=(question.id,)))
-	
+
+    current_user=request.user
+    inp_value = request.POST.get('choice')
+    inp_address=request.POST.get('address')
+    print(inp_address)
+    inp_phone=request.POST.get('phone')
+    print(inp_phone)
+    place_id=request.POST.get('placeId')
+    print("place_id:{}".format(place_id))
+    if place_id != "":
+        attrs = get_restaurant_attr(place_id)
+    else:
+        attrs = [inp_value,"unknown address","unknown phone", 2, 2, "", [""], 0, 0, "www.google.com"]
+    try:
+        question = Question.objects.raw("SELECT * FROM polls_question WHERE id = %s", [question_id])[0]
+    except Question.DoesNotExist:
+        raise Http404("Question does not exist")
+    cursor = connection.cursor()
+    
+    cursor.execute("INSERT INTO polls_choice"
+                "(choice_text, votes, owner_id, question_id, address, phone, rating, price_level, place_id, reviews, latitude, longitude, website)"
+                "VALUES (%s,   %s,    %s,       %s,          %s,      %s,    %s,     %s,          %s,       %s,       %s,       %s,       %s)",
+                [attrs[0], 0, request.user.id, question_id, attrs[1], attrs[2], attrs[3], attrs[4], attrs[5], json.dumps(attrs[6]), attrs[7], attrs[8], attrs[9]]
+                )
+    # question.choice_set.create(choice_text=inp_value,votes=0,owner=request.user)
+    return HttpResponseRedirect(reverse('polls:detail', args=(question.id,)))
+    
+
 def addQuestion(request):
     inp_value = request.POST.get('question')
     deadline = request.POST.get('deadline')
