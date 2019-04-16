@@ -48,8 +48,8 @@ class DetailView(generic.DetailView):
         if context["question"].is_active is False:
             context["winner"] = Choice.objects.get(id=Archive_question.objects.get(question=context["question"]).best_choice.id)
             return context
-            
-        if context["question"].deadline > timezone.now():
+
+        if context["question"].deadline < timezone.now():
             context["question"].is_active=False
             votes = Vote.objects.filter(question_id=context["question"].id)
             choices = collections.defaultdict(int)
