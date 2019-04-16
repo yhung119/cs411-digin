@@ -27,6 +27,9 @@ input[type=choice] {
   cursor: pointer;
   font-size: 20px;
 }
+.hover_img a { position:relative; }
+.hover_img a span { position:absolute; display:none; z-index:99; }
+.hover_img a:hover span { display:block; }
 
 </style>
 
@@ -60,7 +63,13 @@ input[type=choice] {
 {% csrf_token %}
 {% for choice in choices %}
     <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}" />
-    <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}: {{ choice.votes }} votes</label><br />
+    <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}: {{ choice.votes }} votes
+    	<div class="hover_img">
+    	{% load static %}
+	     <a href="#">See tags word cloud<span><img src="{% static img_url %}" alt="image" height="100" /></span></a>
+		</div>
+    </label>
+    <br />
 {% endfor %}
 <div class="vote">
 <input type="submit" value="Vote" name="Vote"/>
