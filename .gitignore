@@ -4,4 +4,5 @@ env
 __pycache__
 *.pyc
 *.cnf
+*.png
 node_modules

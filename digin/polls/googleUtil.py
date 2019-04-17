@@ -1,7 +1,7 @@
 import pprint
 import googlemaps
 from datetime import datetime
-from .google_api_config import API_KEY
+from google_api_config import API_KEY
 import time
 gmaps = googlemaps.Client(key=API_KEY)
 
@@ -9,35 +9,38 @@ def find_place_by_id(place_id):
     detail = gmaps.place(place_id)#, fields=["name", "formatted_address", "rating", "price_level", "formatted_phone_number", "opening_hours", "website"])
     return detail
 
+def get_attr(obj, key, null_value):
+    if key in obj:
+        return obj[key]
+    return null_value
+
 def get_restaurant_attr(place_id):
+    if place_id == "":
+        return ["unknown place name", "unknown address", '000-000-0000', 2, 2, "DUMMY_PLACE_ID", [], 0, 0, "www.google.com"]
     db_attributes = []
     detail = find_place_by_id(place_id)
     if detail["status"]=="OK":
-        print("Place found")
+        placename = get_attr(detail['result'], 'name', "unknown place name")
+        print("Place found ({})".format(placename))
     else:
         print("Place not found")
-        return db_attributes 
+        return ["unknown place name", "unknown address", '000-000-0000', 2, 2, "DUMMY_PLACE_ID", [], 0, 0, "www.google.com"]
 
-    db_attributes.append(detail['result']['name'])
-    db_attributes.append(detail['result']['formatted_address'])
-    db_attributes.append(detail['result']['formatted_phone_number'])
-    db_attributes.append(detail['result']['rating'])
-    if 'price_level' not in detail['result']:
-        db_attributes.append(2)
-    else:
-        db_attributes.append(detail['result']['price_level'])
+    db_attributes.append(get_attr(detail['result'], 'name', "unknown place name"))
+    db_attributes.append(get_attr(detail['result'], 'formatted_address', "unknown address"))
+    db_attributes.append(get_attr(detail['result'], 'formatted_phone_number', '000-000-0000'))
+    db_attributes.append(get_attr(detail['result'], 'rating', 2))
+    db_attributes.append(get_attr(detail['result'], 'price_level', 2))
     db_attributes.append(detail['result']['place_id'])
 
     reviews = []
-    for r in detail['result']['reviews']:
-        reviews += [r['text']]
+    if 'reviews' in detail['result']:
+        for r in detail['result']['reviews']:
+            reviews += [r['text']]
     db_attributes.append(reviews)
     db_attributes.append(detail['result']['geometry']['location']['lat'])
     db_attributes.append(detail['result']['geometry']['location']['lng'])
-    if 'website' not in detail['result']:
-        db_attributes.append("www.google.com")
-    else:
-        db_attributes.append(detail['result']['website'])
+    db_attributes.append(get_attr(detail['result'],'website', "www.google.com"))
     return db_attributes
 
 def get_restaurants(location, radius, restaurant_dict):
@@ -89,11 +92,19 @@ def load_restaurant_to_database():
     )
     cursor = db.cursor()
     import json
+    count = 0
     for key, value in r_dict.items():
-        attrs = get_restaurant_attr(key)
-        cursor.execute("INSERT INTO polls_choice"
-                    "(choice_text, votes, owner_id, question_id, address, phone, rating, price_level, place_id, reviews, latitude, longitude, website)"
-                    "VALUES (%s,   %s,    %s,       %s,          %s,      %s,    %s,     %s,          %s,       %s,       %s,       %s,       %s)",
-                    [attrs[0], 0, 1, 1, attrs[1], attrs[2], attrs[3], attrs[4], attrs[5], json.dumps(attrs[6]), attrs[7], attrs[8], attrs[9]]
-                    )
+        attrs = value
+        attrs[6] = json.dumps(attrs[6])
+        cursor.execute("SELECT * FROM polls_place WHERE place_id=%s",[attrs[5]])
+        records = cursor.fetchall()
+        if len(records)==0:
+            cursor.execute("INSERT INTO polls_place"
+                        "(name, address, phone, rating, price_level, place_id, reviews, latitude, longitude, website)"
+                        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                        attrs)
+            count += 1
     db.commit()
+    print("{} records added.".format(count))
+if __name__ == '__main__':
+    load_restaurant_to_database()
