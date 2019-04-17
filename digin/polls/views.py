@@ -139,7 +139,14 @@ class AddUserView(generic.DetailView):
     model = Question
     template_name = 'polls/adduser.html'
 
-
+#class userStats(generic.DetailView):
+#	model=Question
+#	template_name='polls/userstats.html'
+#	
+#def userStatsa(request,question_id):
+#	a=0
+#	if(a==1):
+#		return HttpResponseRedirect(reverse('polls:detail', args=(question.id,)))
 
 def vote(request, question_id):
     try:
@@ -222,7 +229,6 @@ def addChoice(request, question_id):
     except Question.DoesNotExist:
         raise Http404("Question does not exist")
 
-    
 
     choice = Choice.objects.raw("SELECT * FROM polls_choice WHERE place_id=%s AND question_id=%s", [attrs[5], question_id])
     if (len(list(choice)) == 0):
@@ -324,3 +330,48 @@ def get_data(request,*args,**kwargs):
     print(data)
     return JsonResponse(data)
 
+def get_mvisited(request,*args,**kwargs):
+    print("hello")
+    cur=connection.cursor();
+    cur.execute("SELECT aaa.name, COUNT(*) FROM(SELECT aa.name, aa.place_id,cc.owner_id FROM (SELECT p.name, p.place_id,a.question_id FROM polls_archive_question a INNER JOIN polls_place p ON a.place_id=p.place_id) aa, polls_choice cc, polls_vote vv WHERE cc.place_id=aa.place_id AND vv.choice_id=cc.id) aaa WHERE aaa.owner_id=%s GROUP BY aaa.place_id",[request.user.id])
+    convert=cur.fetchall()
+    mvisited=dict((x, y) for x, y in convert)
+    print(mvisited)
+    return JsonResponse(mvisited)
+	
+def get_mvotedx(request,*args,**kwargs):
+    print("hello")
+    cur=connection.cursor();
+    cur.execute("SELECT g1.aa,g1.bb FROM( SELECT c.name as aa, COUNT(*) as bb, c.question_id as cc FROM polls_vote v, polls_choice c WHERE c.id=v.choice_id GROUP BY c.name ORDER BY COUNT(*) DESC LIMIT 5 ) g1, polls_question q WHERE g1.cc=q.id and q.pub_date>=DATE_ADD(NOW(),INTERVAL -7 DAY)")
+    convert=cur.fetchall()
+    mvotedx=dict((x, y) for x, y in convert)
+    print(mvotedx)
+    return JsonResponse(mvotedx)
+	
+def get_mvisitedx(request,*args,**kwargs):
+    print("hello")
+    cur=connection.cursor();
+    cur.execute("SELECT aaa.name, COUNT(*) FROM(SELECT aa.name, aa.place_id,cc.owner_id,aa.question_id FROM (SELECT p.name, p.place_id,a.question_id FROM polls_archive_question a INNER JOIN polls_place p ON a.place_id=p.place_id) aa, polls_choice cc, polls_vote vv WHERE cc.place_id=aa.place_id AND vv.choice_id=cc.id) aaa, polls_question qqq WHERE aaa.owner_id=%s AND qqq.id=aaa.question_id AND qqq.pub_date>=DATE_ADD(NOW(),INTERVAL -7 DAY) GROUP BY aaa.place_id",[request.user.id])
+    convert=cur.fetchall()
+    mvisitedx=dict((x, y) for x, y in convert)
+    print(mvisitedx)
+    return JsonResponse(mvisitedx)
+
+def get_price(request,*args,**kwargs):
+    print("hello")
+    cur=connection.cursor();
+    cur.execute("SELECT aaa.price_level,COUNT(*) FROM(SELECT aa.name, aa.place_id,cc.owner_id,aa.question_id, aa.price_level FROM (SELECT p.name, p.place_id,a.question_id, p.price_level FROM polls_archive_question a INNER JOIN polls_place p ON a.place_id=p.place_id) aa, polls_choice cc, polls_vote vv WHERE cc.place_id=aa.place_id AND vv.choice_id=cc.id) aaa, polls_question qqq WHERE aaa.owner_id=%s AND qqq.id=aaa.question_id GROUP BY aaa.price_level",[request.user.id])
+    convert=cur.fetchall()
+    price=dict((x, y) for x, y in convert)
+    print(price)
+    return JsonResponse(price)	
+	
+def get_rating(request,*args,**kwargs):
+    print("hello")
+    cur=connection.cursor();
+    cur.execute("SELECT aaa.rating,COUNT(*) FROM(SELECT aa.name, aa.place_id,cc.owner_id,aa.question_id, aa.rating FROM (SELECT p.name, p.place_id,a.question_id, p.rating FROM polls_archive_question a INNER JOIN polls_place p ON a.place_id=p.place_id) aa, polls_choice cc, polls_vote vv WHERE cc.place_id=aa.place_id AND vv.choice_id=cc.id) aaa, polls_question qqq WHERE aaa.owner_id=%s AND qqq.id=aaa.question_id GROUP BY aaa.rating",[request.user.id])
+    convert=cur.fetchall()
+    rating=dict((x, y) for x, y in convert)
+    print(rating)
+    return JsonResponse(rating)	
+	

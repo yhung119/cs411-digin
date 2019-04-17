@@ -35,6 +35,26 @@ input[type=choice] {
     width: 200px;
     height:200px
 }
+.chart-container1 {
+    width: 200px;
+    height:200px
+}
+.chart-container2 {
+    width: 200px;
+    height:200px
+}
+.chart-container3 {
+    width: 200px;
+    height:200px
+}
+.chart-container4 {
+    width: 200px;
+    height:200px
+}
+.chart-container5 {
+    width: 200px;
+    height:200px
+}
 </style>
 
 
@@ -197,6 +217,27 @@ input[type=choice] {
 <canvas id="myChart" width="200" height="200"></canvas>
 </div>
 
+<div class="chart-container2">
+<canvas id="mvotedxChart" width="200" height="200"></canvas>
+</div>
+
+<div class="chart-container1">
+<canvas id="mvistedChart" width="200" height="200"></canvas>
+</div>
+
+<div class="chart-container3">
+<canvas id="mvisitedxChart" width="200" height="200"></canvas>
+</div>
+
+
+<div class="chart-container4">
+<canvas id="priceChart" width="200" height="200"></canvas>
+</div>
+
+<div class="chart-container5">
+<canvas id="ratingChart" width="200" height="200"></canvas>
+</div>
+
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.min.js"></script>
 <script>
@@ -225,16 +266,162 @@ input[type=choice] {
 				data: {
 					labels: Object.keys(data),
 					datasets: [{
-						label: 'Most Voted Restaurants',
+						label: 'votes',
 						data: Object.values(data),
-						backgroundColor: [ 'rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)' ], borderColor: [ 'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)' ], borderWidth: 1 }] }, options: { scales: { yAxes: [{ ticks: { 	beginAtZero: true } }] } } });
+						backgroundColor: [ 'rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)' ], borderColor: [ 'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)' ], borderWidth: 1 }] }, options: { scales: { yAxes: [{ ticks: { 	beginAtZero: true } }] },title:{display:true,text:'Most Voted Restaurants'} } });
 		},
 		error: function(error_data){
 			console.log("error")
 			console.log(error_data)
 		}
 	})
-	console.log(gdata);
+	
+	$.ajax({
+		method:"GET",
+		url:'/api/mvisited/',
+		success: function(data){
+
+			console.log(Object.keys(data))
+			console.log(data)
+			for (var key in data){
+				if (key.length > 10){
+					data[key.substring(0,9)] = data[key];
+					delete data[key];
+				}
+			}
+			gdata=data;
+			var ctx = document.getElementById('mvistedChart').getContext('2d');
+			var myChart = new Chart(ctx, {
+				type: 'bar',
+				data: {
+					labels: Object.keys(data),
+					datasets: [{
+						label: 'votes',
+						data: Object.values(data),
+						backgroundColor: [ 'rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)' ], borderColor: [ 'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)' ], borderWidth: 1 }] }, options: { scales: { yAxes: [{ ticks: { 	beginAtZero: true } }] },title:{display:true,text:'Most Visited Restaurants'} } });
+		},
+		error: function(error_data){
+			console.log("error")
+			console.log(error_data)
+		}
+	})
+	$.ajax({
+		method:"GET",
+		url:'/api/mvotedx/',
+		success: function(data){
+
+			console.log(Object.keys(data))
+			console.log(data)
+			for (var key in data){
+				if (key.length > 10){
+					data[key.substring(0,9)] = data[key];
+					delete data[key];
+				}
+			}
+			gdata=data;
+			var ctx = document.getElementById('mvotedxChart').getContext('2d');
+			var myChart = new Chart(ctx, {
+				type: 'pie',
+				data: {
+					labels: Object.keys(data),
+					datasets: [{
+						label: 'votes',
+						data: Object.values(data),
+						backgroundColor: [ 'rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)' ], borderColor: [ 'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)' ], borderWidth: 1 }] }, options: { scales: { yAxes: [{ ticks: { 	beginAtZero: true } }] },title:{display:true,text:'Most Voted Past Week'} } });
+		},
+		error: function(error_data){
+			console.log("error")
+			console.log(error_data)
+		}
+	})
+	$.ajax({
+		method:"GET",
+		url:'/api/mvisitedx/',
+		success: function(data){
+
+			console.log(Object.keys(data))
+			console.log(data)
+			for (var key in data){
+				if (key.length > 10){
+					data[key.substring(0,9)] = data[key];
+					delete data[key];
+				}
+			}
+			gdata=data;
+			var ctx = document.getElementById('mvisitedxChart').getContext('2d');
+			var myChart = new Chart(ctx, {
+				type: 'pie',
+				data: {
+					labels: Object.keys(data),
+					datasets: [{
+						label: 'visits',
+						data: Object.values(data),
+						backgroundColor: [ 'rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)' ], borderColor: [ 'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)' ], borderWidth: 1 }] }, options: { scales: { yAxes: [{ ticks: { 	beginAtZero: true } }] },title:{display:true,text:'Most Visited Past Week'} } });
+		},
+		error: function(error_data){
+			console.log("error")
+			console.log(error_data)
+		}
+	})
+	$.ajax({
+		method:"GET",
+		url:'/api/price/',
+		success: function(data){
+
+			console.log(Object.keys(data))
+			console.log(data)
+			for (var key in data){
+				if (key.length > 10){
+					data[key.substring(0,9)] = data[key];
+					delete data[key];
+				}
+			}
+			gdata=data;
+			var ctx = document.getElementById('priceChart').getContext('2d');
+			var myChart = new Chart(ctx, {
+				type: 'doughnut',
+				data: {
+					labels: Object.keys(data),
+					datasets: [{
+						
+						data: Object.values(data),
+						backgroundColor: [ 'rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)' ], borderColor: [ 'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)' ], borderWidth: 1 }] }, options: { scales: { yAxes: [{ ticks: { 	beginAtZero: true } }] },title:{display:true,text:'Price Levels Visited'} } });
+		},
+		error: function(error_data){
+			console.log("error")
+			console.log(error_data)
+		}
+	})
+	
+	$.ajax({
+		method:"GET",
+		url:'/api/rating/',
+		success: function(data){
+
+			console.log(Object.keys(data))
+			console.log(data)
+			for (var key in data){
+				if (key.length > 10){
+					data[key.substring(0,9)] = data[key];
+					delete data[key];
+				}
+			}
+			gdata=data;
+			var ctx = document.getElementById('ratingChart').getContext('2d');
+			var myChart = new Chart(ctx, {
+				type: 'doughnut',
+				data: {
+					labels: Object.keys(data),
+					datasets: [{
+						
+						data: Object.values(data),
+						backgroundColor: [ 'rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)' ], borderColor: [ 'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)' ], borderWidth: 1 }] }, options: { scales: { yAxes: [{ ticks: { 	beginAtZero: true } }] },title:{display:true,text:'Rating Tiers Visited'} } });
+		},
+		error: function(error_data){
+			console.log("error")
+			console.log(error_data)
+		}
+	})
 	
 
 {% endblock %}
