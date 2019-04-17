@@ -21,7 +21,6 @@ class Poll_members(models.Model):
 	member = models.ForeignKey(User, on_delete=models.CASCADE)
 
 	
-
 class Place(models.Model):
 	name = models.CharField(max_length=200)
 	phone = models.CharField(max_length=200, blank=True)

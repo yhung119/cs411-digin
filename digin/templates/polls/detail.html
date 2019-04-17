@@ -53,7 +53,7 @@ input[type=choice] {
 {% if question.is_active == False %}
 	
 
-		<h1> end of poll. The winner was {{winner.choice_text}}</h1>
+		<h1> end of poll. The winner was {{winner.name}}</h1>
 	
 
 {% else %}
@@ -66,13 +66,21 @@ input[type=choice] {
 <div class="vote">
 {% csrf_token %}
 {% for choice in choices %}
-    <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}" />
-    <label for="choice{{ forloop.counter }}">{{ choice.name }}: {{ choice.votes }} votes
+    
+    <label for="choice{{ forloop.counter }}">
+<input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}" />
+    	{{ choice.name }}: {{ choice.votes }} votes
+    	
+    	<br/>
+    address: {{choice.place_id.address}} 
+    <br/>
+    rating: {{choice.place_id.rating}} 
     	<div class="hover_img">
     	{% load static %}
-	     <a href="#">See tags word cloud<span><img src="{% static "" %}{{choice.place_id.place_id}}.png" alt="image" height="100" /></span></a>
+	     <a href="#">See tags word cloud<span><img src="{% static "" %}{{choice.place_id.place_id}}.png" alt="image" height="200" /></span></a>
 		</div>
     </label>
+    <br />
     <br />
 {% endfor %}
 <div class="vote">

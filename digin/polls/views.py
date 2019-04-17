@@ -35,12 +35,17 @@ class IndexView(generic.ListView):
         """Return the last five published questions."""
         if self.request.user.is_anonymous:
             return None
-        user_polls = Poll_members.objects.filter(member=self.request.user)
+        user_polls = Poll_members.objects.raw("SELECT * FROM polls_poll_members WHERE member_id=%s", [self.request.user.id])
+        #filter(member=self.request.user)
         
         question_ids = [poll.question.id for poll in user_polls]
-        # print(question_ids)
-        return Question.objects.filter(pk__in=question_ids)#Question.objects.raw("SELECT * FROM polls_question ORDER BY pub_date DESC")
-
+        question_ids = tuple(question_ids)
+        print(len(question_ids))
+        if (len(question_ids) == 0):
+            return None
+        query = Question.objects.raw("SELECT * FROM polls_question WHERE id IN %s", [question_ids])#Question.objects.filter(pk__in=question_ids)#Question.objects.raw("SELECT * FROM polls_question ORDER BY pub_date DESC")
+        return query
+        
 def get_winning_choice(question_id):
     '''
     returns the winning chocie of the given question
@@ -49,8 +54,11 @@ def get_winning_choice(question_id):
     TODO:
         handle the case when there is no vote in that question
     '''
+    cursor = connection.cursor()
+
     # get the votes
-    votes = Vote.objects.filter(question_id=question_id)
+    votes = Vote.objects.raw("SELECT * FROM polls_vote WHERE question_id=%s", [question_id])
+    #Vote.objects.filter(question_id=question_id)
 
     # calcuate the choices with highest vote
     choices = collections.defaultdict(int)
@@ -65,11 +73,28 @@ def get_winning_choice(question_id):
     for key, val in choices.items():
         if (val == max_vote):
             winning_choices.append(key)
-    question = Question.objects.get(id=question_id)
+
+    #Question.objects.get(id=question_id)
     winning_choice = winning_choices[random.randint(0,len(winning_choices)-1)]
-    arch_question = Archive_question(question=question, best_choice=Choice.objects.get(id=winning_choice))
-    arch_question.save()
-    return Choice.objects.get(id=winning_choice)
+
+    """
+    cursor.execute("INSERT INTO polls_choice"
+                    "(question_id, owner_id, place_id, name, votes)"
+                    "VALUES (%s, %s, %s, %s, 0)",
+                    [question_id, current_user.id, attrs[5], attrs[0]]
+                    )
+
+    """
+    winning_choice_obj = Choice.objects.raw("SELECT * FROM polls_choice WHERE question_id=%s AND id=%s", [question_id, winning_choice])
+    ## insert archieve question in
+    print(winning_choice_obj[0].place_id.id)
+    cursor.execute("INSERT INTO polls_archive_question"
+                   "(question_id, place_id)"
+                   "VALUES (%s, %s)",
+                   [question_id, winning_choice_obj[0].place_id.place_id])
+    #arch_question = Archive_question(question=question, place_id=Choice.objects.get(id=winning_choice).place_id)
+    #arch_question.save()
+    return winning_choice_obj[0] #Choice.objects.get(id=winning_choice)
 
 class DetailView(generic.DetailView):
     '''
@@ -85,7 +110,11 @@ class DetailView(generic.DetailView):
         
         
         if context["question"].is_active is False:
-            context["winner"] = Choice.objects.get(id=Archive_question.objects.get(question=context["question"]).best_choice.id)
+            # Archive_question.objects.get(question=context["question"])
+            archive_place_id = Archive_question.objects.raw("SELECT * FROM polls_archive_question WHERE question_id=%s",[context["question"].id])
+            # Place.objects.get(place_id=Archive_question.objects.get(question=context["question"]).place_id.place_id)
+            context["winner"] = Place.objects.raw("SELECT * FROM polls_place WHERE place_id=%s",[archive_place_id[0].place_id.place_id])[0]
+           
             return context
 
         if context["question"].deadline < timezone.now():
@@ -93,10 +122,6 @@ class DetailView(generic.DetailView):
             winner = get_winning_choice(context["question"].id)
             context["winner"] = winner
             context["question"].save()
-        
-        # print(context["question"].deadline - timezone.now() > 0)
-        ## the context is a list of the tasks of the Project##
-        ##THIS IS THE ERROR##
         
         return context
 
@@ -167,32 +192,38 @@ def addChoice(request, question_id):
 
     current_user=request.user
     inp_value = request.POST.get('choice')
-    
-    place_id=request.POST.get('placeId')
-    print("place_id:{}".format(place_id))
-    if place_id != "":
-        attrs = get_restaurant_attr(place_id)
-    else:
-        attrs = [inp_value,"unknown address","unknown phone", 2, 2, "", [""], 0, 0, "www.google.com"]
-    try:
-        question = Question.objects.raw("SELECT * FROM polls_question WHERE id = %s", [question_id])[0]
-    except Question.DoesNotExist:
-        raise Http404("Question does not exist")
-
-    generate_wordcloud(place_id, attrs[6])
-    print(attrs)
-    attrs[6] = json.dumps(attrs[6])
     cursor = connection.cursor()
+    
+    ## parse place id 
+    place_id=request.POST.get('placeId')
+    place = Place.objects.raw("SELECT * FROM polls_place WHERE place_id=%s", [place_id])
 
-    place = Place.objects.raw("SELECT * FROM polls_place WHERE place_id=%s", [attrs[5]])
-    # print(place)
-    # print(type(place))
-    if (len(list(place))==0):
+    print("place_id:{}".format(place_id))
+    if len(list(place)) == 0:
+        print("enetered google api")
+        if place_id != "":
+            attrs = get_restaurant_attr(place_id)
+        else:
+            attrs = [inp_value,"unknown address","unknown phone", 2, 2, "", [""], 0, 0, "www.google.com"]
+        generate_wordcloud(place_id, attrs[6])
+        attrs[6] = json.dumps(attrs[6])
         cursor.execute("INSERT INTO polls_place"
                     "(name, address, phone, rating, price_level, place_id, reviews, latitude, longitude, website)"
                     "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                     attrs
                     )
+    else:
+        print("existed rest")
+        p = place[0]
+        attrs = [p.name, p.address, p.phone, p.rating, p.price_level, p.place_id, p.reviews, p.latitude, p.longitude, p.website]
+    
+    try:
+        question = Question.objects.raw("SELECT * FROM polls_question WHERE id = %s", [question_id])[0]
+    except Question.DoesNotExist:
+        raise Http404("Question does not exist")
+
+    
+
     choice = Choice.objects.raw("SELECT * FROM polls_choice WHERE place_id=%s AND question_id=%s", [attrs[5], question_id])
     if (len(list(choice)) == 0):
         cursor.execute("INSERT INTO polls_choice"
@@ -209,16 +240,25 @@ def addChoice(request, question_id):
 def addQuestion(request):
     inp_value = request.POST.get('question')
     deadline = request.POST.get('deadline')
-    q = Question(question_text=inp_value,pub_date=timezone.now(),owner=request.user, deadline=deadline, is_active=True)
-    q.save()
-    poll_mem = Poll_members(member=request.user, question=q)
-    poll_mem.save()
-    # cursor = connection.cursor()
-    # cursor.execute("INSERT INTO polls_question"
-    #                "(question_text, pub_date, owner_id, deadline)"
-    #                "VALUES (%s, NOW(), %s, %s)",
-    #                (inp_value, request.user.id)
-    #                )
+    cursor = connection.cursor()
+
+    # equivlanet in django:
+    # q = Question(question_text=inp_value,pub_date=timezone.now(),owner=request.user, deadline=deadline, is_active=True)
+    # q.save()
+    cursor.execute("INSERT INTO polls_question"
+                   "(question_text, pub_date, owner_id, deadline, is_active)"
+                   "VALUES (%s, NOW(), %s, %s, 1)",
+                   (inp_value, request.user.id, deadline))
+    question_id = cursor.lastrowid
+    
+    # equivalent in django:
+    # poll_mem = Poll_members(member=request.user, question=q)
+    # poll_mem.save()
+    cursor.execute("INSERT INTO polls_poll_members"
+                   "(member_id, question_id)"
+                   "VALUES (%s, %s)",
+                   (request.user.id, question_id))
+    
     return HttpResponseRedirect(reverse('polls:home'))
 
 
@@ -249,34 +289,38 @@ def editQuestion(request,question_id):
 
 def addUser(request, question_id):
     """
-    TODO:
-        make sure duplicate is not added. Either fixed it on the database level or 
-        implement on API.
 
     """
+    cursor = connection.cursor()
     user = request.user
     inp_value = request.POST.get('name')
+    member_id = CustomUser.objects.raw("SELECT * FROM users_customuser WHERE name = %s", [inp_value])
     
+    question = Question.objects.raw("SELECT * FROM polls_question WHERE id=%s", [question_id])
 
-    member_id = CustomUser.objects.filter(name=inp_value)
-    question = Question.objects.get(id=question_id)
-
-    # checking that onwer is not adding himself or user doesn't exist
-    if (len(member_id) != 1 or Poll_members.objects.filter(member=member_id[0], question=question).exists()):
+    # checking tha onwer is not adding himself or user doesn't exist
+    if (len(member_id) != 1):
         return HttpResponseRedirect(reverse('polls:index'))
-    
+
+    check_user_exist = Poll_members.objects.raw("SELECT * FROM polls_poll_members WHERE member_id = %s AND question_id = %s",[member_id[0].id, question_id])
+    if (len(check_user_exist) > 0):
+        return HttpResponseRedirect(reverse('polls:index'))
+    """
     new_member = Poll_members(member=member_id[0], question=question)
-    
     new_member.save()
+    """
+    cursor.execute("INSERT INTO polls_poll_members"
+                   "(member_id, question_id)"
+                   "VALUES (%s, %s)",
+                   (member_id[0].id, question_id))
     
     return HttpResponseRedirect(reverse('polls:index'))
 
-def get_data(request,*args,**kwargs):
-    print("hello")
-    cur=connection.cursor();
+def get_data(request,*args,**kwargs):   
+    cur = connection.cursor();
     cur.execute("SELECT c.name, COUNT(*) FROM polls_vote v, polls_choice c WHERE c.id=v.choice_id GROUP BY c.name ORDER BY COUNT(*) DESC LIMIT 5")
-    convert=cur.fetchall()
-    data=dict((x, y) for x, y in convert)
+    convert = cur.fetchall()
+    data = dict((x, y) for x, y in convert)
     print(data)
     return JsonResponse(data)
 
