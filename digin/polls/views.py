@@ -3,6 +3,7 @@ from django.http import Http404
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views import generic
+from django.http import JsonResponse
 
 from .models import Choice, Question, Vote
 from django.contrib.auth.decorators import login_required
@@ -95,10 +96,12 @@ def vote(request, question_id):
 				})
 
 def addChoice(request, question_id):
+	
 	current_user=request.user
 	inp_value = request.POST.get('choice')
 	inp_address=request.POST.get('address')
-	print(inp_address);
+	inp_placeid=request.POST.get('placeid')
+	
 	try:
 		question = Question.objects.raw("SELECT * FROM polls_question WHERE id = %s", [question_id])[0]
 	except Question.DoesNotExist:
@@ -116,6 +119,7 @@ def addQuestion(request):
     inp_value = request.POST.get('question')
     # q = Question(question_text=inp_value,pub_date=timezone.now(),owner=request.user)
     # q.save()
+	
     cursor = connection.cursor()
     cursor.execute("INSERT INTO polls_question"
                    "(question_text, pub_date, owner_id)"
@@ -156,3 +160,12 @@ def editQuestion(request,question_id):
     cursor = connection.cursor()
     cursor.execute("UPDATE polls_question SET question_text = %s WHERE id=%s AND owner_id=%s", [inp_value, question_id, request.user.id])
     return HttpResponseRedirect(reverse('polls:index'))
+
+def get_data(request,*args,**kwargs):
+	print("hello")
+	cur=connection.cursor();
+	cur.execute("SELECT c.choice_text, COUNT(*) FROM polls_vote v, polls_choice c WHERE c.id=v.choice_id GROUP BY c.choice_text ORDER BY COUNT(*) DESC LIMIT 5")
+	convert=cur.fetchall()
+	data=dict((x, y) for x, y in convert)
+	print(data)
+	return JsonResponse(data)

@@ -2,10 +2,12 @@ from django.conf.urls import url
 from django.urls import path
 
 from . import views
+from .views import get_data
 
 app_name = 'polls'
 urlpatterns = [\
     path('', views.IndexView.as_view(), name='home'),
+	url(r'^api/data/$', get_data, name='api-data'),#for graph data
     path('polls/', views.IndexView.as_view(), name="index"),
     # url(r'^$', views.IndexView.as_view(), name='index'),
     url(r'^addQuestion/$', views.addQuestion, name='addQuestion'),

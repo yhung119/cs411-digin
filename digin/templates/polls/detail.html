@@ -28,6 +28,10 @@ input[type=choice] {
   font-size: 20px;
 }
 
+.chart-container {
+    width: 200px;
+    height:200px
+}
 </style>
 </head>
 <nav class="navbar navbar-inverse">
@@ -62,6 +66,7 @@ input[type=choice] {
 {% csrf_token %}
     <input id="choice" type="text" name="choice" value="{{ choice }}" maxlength="200" style="width:200px">
 	<input id="address" type="hidden" name="address" value="" maxlength="200">
+	<input id="placeid" type="hidden" name="placeid" value="" maxlength="200">
     <input type="submit" value="Add Choice">
 	
 </vote>
@@ -78,15 +83,72 @@ input[type=choice] {
 		var place=autocomplete.getPlace();
 		var inp_address=document.getElementById("address");
 		inp_address.value=place.formatted_address;
+		var inp_placeid=document.getElementById("placeid");
+		inp_placeid.value=place.place_id;
+		console.log(inp_placeid.value);
 		var inp_choice=document.getElementById("choice");
 		choice.value=place.name;
 		console.log(place.formatted_address);
+		
+		if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var pos = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+			console.log(pos);
+            
+          });
+        } else {
+          // Browser doesn't support Geolocation
+          handleLocationError(false, infoWindow, map.getCenter());
+        }
+		
 	}
 </script>
 	
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAQs1AhWqKf-H-TNVh6j1moFjTwBfAn97s&libraries=places&callback=activatePlacesSearch"></script>
 
 </form>
+<div class="chart-container">
+<canvas id="myChart" width="200" height="200"></canvas>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.min.js"></script>
+<script>
+{% block jquery %}
+	var endpoint='/api/data/'
+	var defaultData=[]
+	var labels=['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'];
+	var gdata;
+	$.ajax({
+		method:"GET",
+		url:endpoint,
+		success: function(data){
+			console.log(Object.keys(data))
+			console.log(data)
+			gdata=data;
+			var ctx = document.getElementById('myChart').getContext('2d');
+			var myChart = new Chart(ctx, {
+				type: 'bar',
+				data: {
+					labels: Object.keys(data),
+					datasets: [{
+						label: 'Most Voted Restaurants',
+						data: Object.values(data),
+						backgroundColor: [ 'rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)', 'rgba(75, 192, 192, 0.2)', 'rgba(153, 102, 255, 0.2)', 'rgba(255, 159, 64, 0.2)' ], borderColor: [ 'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)', 'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)' ], borderWidth: 1 }] }, options: { scales: { yAxes: [{ ticks: { 	beginAtZero: true } }] } } });
+		},
+		error: function(error_data){
+			console.log("error")
+			console.log(error_data)
+		}
+	})
+	console.log(gdata);
+	
+
+{% endblock %}
+</script>
 
 {% endblock %}
 
