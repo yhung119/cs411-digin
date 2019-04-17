@@ -205,7 +205,7 @@ def addChoice(request, question_id):
             attrs = get_restaurant_attr(place_id)
         else:
             attrs = [inp_value,"unknown address","unknown phone", 2, 2, "", [""], 0, 0, "www.google.com"]
-        generate_wordcloud(place_id, attrs[6])
+        
         attrs[6] = json.dumps(attrs[6])
         cursor.execute("INSERT INTO polls_place"
                     "(name, address, phone, rating, price_level, place_id, reviews, latitude, longitude, website)"
@@ -216,7 +216,7 @@ def addChoice(request, question_id):
         print("existed rest")
         p = place[0]
         attrs = [p.name, p.address, p.phone, p.rating, p.price_level, p.place_id, p.reviews, p.latitude, p.longitude, p.website]
-    
+    generate_wordcloud(place_id, json.loads(attrs[6]))
     try:
         question = Question.objects.raw("SELECT * FROM polls_question WHERE id = %s", [question_id])[0]
     except Question.DoesNotExist:

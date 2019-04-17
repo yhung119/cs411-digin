@@ -86,9 +86,9 @@ def load_restaurant_to_database():
     import mysql.connector as mysql
     db = mysql.connect(
         host = "localhost",
-        user = "cs411",
-        passwd = "cs411",
-        database = "test2"
+        user = "yi",
+        passwd = "password",
+        database = "digin"
     )
     cursor = db.cursor()
     import json
