@@ -323,3 +323,12 @@ def get_price(request,*args,**kwargs):
     print(price)
     return JsonResponse(price)	
 	
+def get_rating(request,*args,**kwargs):
+    print("hello")
+    cur=connection.cursor();
+    cur.execute("SELECT aaa.rating,COUNT(*) FROM(SELECT aa.name, aa.place_id,cc.owner_id,aa.question_id, aa.rating FROM (SELECT p.name, p.place_id,a.question_id, p.rating FROM polls_archive_question a INNER JOIN polls_place p ON a.place_id=p.place_id) aa, polls_choice cc, polls_vote vv WHERE cc.place_id=aa.place_id AND vv.choice_id=cc.id) aaa, polls_question qqq WHERE aaa.owner_id=%s AND qqq.id=aaa.question_id GROUP BY aaa.rating",[request.user.id])
+    convert=cur.fetchall()
+    rating=dict((x, y) for x, y in convert)
+    print(rating)
+    return JsonResponse(rating)	
+	

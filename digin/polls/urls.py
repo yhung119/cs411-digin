@@ -2,7 +2,7 @@ from django.conf.urls import url
 from django.urls import path
 
 from . import views
-from .views import get_data,get_mvisited, get_mvotedx,get_mvisitedx,get_price
+from .views import get_data,get_mvisited, get_mvotedx,get_mvisitedx,get_price,get_rating
 
 app_name = 'polls'
 urlpatterns = [\
@@ -13,6 +13,7 @@ urlpatterns = [\
 	url(r'^api/mvotedx/$', get_mvotedx, name='api-/mvotedx'),#for graph data
 	url(r'^api/mvisitedx/$', get_mvisitedx, name='api-/mvisitedx'),#for graph data
 	url(r'^api/price/$', get_price, name='api-/price'),#for graph data
+	url(r'^api/rating/$', get_rating, name='api-/price'),#for graph data
 	#url(r'^(?P<pk>[0-9]+)/userstats$', views.userStats.as_view(), name='userstats'),
 	#url(r'^(?P<question_id>[0-9]+)/userStatsa/$', views.userStatsa, name='userStatsa')
 	
