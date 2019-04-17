@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views import generic
 
-from .models import Choice, Question, Vote, Poll_members, Archive_question
+from .models import Choice, Question, Vote, Poll_members, Archive_question, Place
 from users.models import CustomUser
 from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
@@ -15,7 +15,7 @@ from django.db.models.expressions import RawSQL
 from django.utils.timesince import timesince
 import collections
 import random
-from .review_views import get_wordcloud
+from .review_views import generate_wordcloud
 from .googleUtil import get_restaurant_attr
 import json
 
@@ -80,8 +80,9 @@ class DetailView(generic.DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)
-        context['choices'] = Choice.objects.raw("SELECT * FROM polls_choice WHERE question_id = %s",[context["question"].id])
-        context['img_url'] = get_wordcloud(restaurant_id = 2)
+        context["choices"] = Choice.objects.raw("SELECT * FROM polls_choice WHERE question_id = %s",[context["question"].id])
+        
+        
         if context["question"].is_active is False:
             context["winner"] = Choice.objects.get(id=Archive_question.objects.get(question=context["question"]).best_choice.id)
             return context
@@ -95,7 +96,6 @@ class DetailView(generic.DetailView):
         # print(context["question"].deadline - timezone.now() > 0)
         ## the context is a list of the tasks of the Project##
         ##THIS IS THE ERROR##
-        
         
         return context
 
@@ -166,10 +166,7 @@ def addChoice(request, question_id):
 
     current_user=request.user
     inp_value = request.POST.get('choice')
-    inp_address=request.POST.get('address')
-    print(inp_address)
-    inp_phone=request.POST.get('phone')
-    print(inp_phone)
+    
     place_id=request.POST.get('placeId')
     print("place_id:{}".format(place_id))
     if place_id != "":
@@ -180,13 +177,30 @@ def addChoice(request, question_id):
         question = Question.objects.raw("SELECT * FROM polls_question WHERE id = %s", [question_id])[0]
     except Question.DoesNotExist:
         raise Http404("Question does not exist")
+
+    generate_wordcloud(place_id, attrs[6])
+    print(attrs)
+    attrs[6] = json.dumps(attrs[6])
     cursor = connection.cursor()
-    
-    cursor.execute("INSERT INTO polls_choice"
-                "(choice_text, votes, owner_id, question_id, address, phone, rating, price_level, place_id, reviews, latitude, longitude, website)"
-                "VALUES (%s,   %s,    %s,       %s,          %s,      %s,    %s,     %s,          %s,       %s,       %s,       %s,       %s)",
-                [attrs[0], 0, request.user.id, question_id, attrs[1], attrs[2], attrs[3], attrs[4], attrs[5], json.dumps(attrs[6]), attrs[7], attrs[8], attrs[9]]
-                )
+
+    place = Place.objects.raw("SELECT * FROM polls_place WHERE place_id=%s", [attrs[5]])
+    # print(place)
+    # print(type(place))
+    if (len(list(place))==0):
+        cursor.execute("INSERT INTO polls_place"
+                    "(name, address, phone, rating, price_level, place_id, reviews, latitude, longitude, website)"
+                    "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                    attrs
+                    )
+    choice = Choice.objects.raw("SELECT * FROM polls_choice WHERE place_id=%s AND question_id=%s", [attrs[5], question_id])
+    if (len(list(choice)) == 0):
+        cursor.execute("INSERT INTO polls_choice"
+                    "(question_id, owner_id, place_id, name, votes)"
+                    "VALUES (%s, %s, %s, %s, 0)",
+                    [question_id, current_user.id, attrs[5], attrs[0]]
+                    )
+
+
     # question.choice_set.create(choice_text=inp_value,votes=0,owner=request.user)
     return HttpResponseRedirect(reverse('polls:detail', args=(question.id,)))
     

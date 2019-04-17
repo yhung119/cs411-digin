@@ -63,10 +63,10 @@ input[type=choice] {
 {% csrf_token %}
 {% for choice in choices %}
     <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{ choice.id }}" />
-    <label for="choice{{ forloop.counter }}">{{ choice.choice_text }}: {{ choice.votes }} votes
+    <label for="choice{{ forloop.counter }}">{{ choice.name }}: {{ choice.votes }} votes
     	<div class="hover_img">
     	{% load static %}
-	     <a href="#">See tags word cloud<span><img src="{% static img_url %}" alt="image" height="100" /></span></a>
+	     <a href="#">See tags word cloud<span><img src="{% static "" %}{{choice.place_id.place_id}}.png" alt="image" height="100" /></span></a>
 		</div>
     </label>
     <br />
@@ -84,9 +84,7 @@ input[type=choice] {
 
 {% csrf_token %}
     <input id="choice" type="text" name="choice" value="{{ choice }}" maxlength="200" style="width:200px">
-	  <input id="address" type="hidden" name="address" value="" maxlength="200">
-
-    <input id="phone" type="hidden" name="phone" value="" maxlength="200">
+	  
     <input id="placeId" type="hidden" name="placeId" value="" maxlength="200">
 
     <input type="submit" value="Add Choice">
@@ -148,14 +146,12 @@ input[type=choice] {
 	}
 	function onPlaceChanged(){
 		var place=autocomplete.getPlace();
-		var inp_address=document.getElementById("address");
-		inp_address.value=place.formatted_address;
-    var inp_phone=document.getElementById("phone");
-    inp_phone.value=place.formatted_phone_number;
-    var inp_place_id=document.getElementById("placeId");
-    inp_place_id.value=place.place_id;
-    console.log(place);
-    console.log(place.place_id);
+		console.log(place);
+	    var inp_place_id=document.getElementById("placeId");
+	    inp_place_id.value=place.place_id;
+	    console.log(inp_place_id);
+	    console.log(place);
+	    console.log(place.place_id);
     var inp_choice=document.getElementById("choice");
 		choice.value=place.name;
 		console.log(place.formatted_address);
