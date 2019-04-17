@@ -1,7 +1,7 @@
 import pprint
 import googlemaps
 from datetime import datetime
-from google_api_config import API_KEY
+from .google_api_config import API_KEY
 import time
 gmaps = googlemaps.Client(key=API_KEY)
 
