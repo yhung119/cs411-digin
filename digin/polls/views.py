@@ -108,7 +108,6 @@ class DetailView(generic.DetailView):
         context = super(DetailView, self).get_context_data(**kwargs)
         context["choices"] = Choice.objects.raw("SELECT * FROM polls_choice WHERE question_id = %s",[context["question"].id])
         
-        
         if context["question"].is_active is False:
             # Archive_question.objects.get(question=context["question"])
             archive_place_id = Archive_question.objects.raw("SELECT * FROM polls_archive_question WHERE question_id=%s",[context["question"].id])
@@ -116,7 +115,7 @@ class DetailView(generic.DetailView):
             context["winner"] = Place.objects.raw("SELECT * FROM polls_place WHERE place_id=%s",[archive_place_id[0].place_id.place_id])[0]
            
             return context
-
+        
         if context["question"].deadline < timezone.now():
             context["question"].is_active=False
             winner = get_winning_choice(context["question"].id)
@@ -223,7 +222,7 @@ def addChoice(request, question_id):
                     "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s,%s)",
                     attrs
                     )
-    else:
+    else: 
         print("existed rest")
         p = place[0]
         attrs = [p.name, p.address, p.phone, p.rating, p.price_level, p.place_id, p.reviews, p.latitude, p.longitude, p.website,p.city]
@@ -358,6 +357,7 @@ def get_mvisited(request,*args,**kwargs):
     return JsonResponse(mvisited)
     
 def get_mvotedx(request,*args,**kwargs):
+
     inp_value = request.POST.get('city')
     city_name=request.GET.getlist('passin')[0]
     if city_name:
@@ -366,6 +366,7 @@ def get_mvotedx(request,*args,**kwargs):
     else:
         cur=connection.cursor();
         cur.execute("SELECT g1.aa,g1.bb FROM( SELECT c.name as aa, COUNT(*) as bb, c.question_id as cc FROM polls_vote v, polls_choice c WHERE c.id=v.choice_id GROUP BY c.name ORDER BY COUNT(*) DESC LIMIT 5 ) g1, polls_question q WHERE g1.cc=q.id and q.pub_date>=DATE_ADD(NOW(),INTERVAL -7 DAY)")
+
     convert=cur.fetchall()
     mvotedx=dict((x, y) for x, y in convert)
     print(mvotedx)

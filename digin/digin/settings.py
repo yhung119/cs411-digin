@@ -98,50 +98,30 @@ WSGI_APPLICATION = 'digin.wsgi.application'
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
 DATABASES = {
-    #'default': {
-    #    'ENGINE': 'django.db.backends.mysql',
-    #    'OPTIONS': {
-    #      'read_default_file': './digin/my.cnf',
-    #      'charset': 'utf8mb4',
-	#	},
-	#	
-	#	# 'USER' : 'yi',
-	#	# 'PASSWORD' : 'password',
-	#	# 'NAME' : 'test',
-	#	# 'HOST' : 'localhost',
-	#	# 'PORT' : '',
-	#	# 'OPTIONS':{
-	#	# 	'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-	#		
-	#	# 	'read_default_file': './digin/my.cnf',
-	#	# },
-	#	# 'TEST': {
-	#	# 	'CHARSET': 'utf8mb4',
-	#	# 	'COLLATION': 'utf8mb4_unicode_ci',	
-	#	# }
-    #    
-    #}
-	'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        #'OPTIONS': {
-        #   'read_default_file': './digin/my.cnf',
-		#},
-		'USER' : 'root',
-		'PASSWORD' : '',
-		'NAME' : 'test2',
-		'HOST' : 'localhost',
-		'PORT' : '3306',
-		'OPTIONS':{
-			'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-			'charset': 'utf8mb4',
-			'read_default_file': './digin/my.cnf',
+    'default': {
+       'ENGINE': 'django.db.backends.mysql',
+       'OPTIONS': {
+         'read_default_file': './digin/my.cnf',
+         'charset': 'utf8mb4',
 		},
-		'TEST': {
-			'CHARSET': 'utf8mb4',
-			'COLLATION': 'utf8mb4_unicode_ci',	
-		}
-        
+		
+		# 'USER' : 'yi',
+		# 'PASSWORD' : 'password',
+		# 'NAME' : 'test',
+		# 'HOST' : 'localhost',
+		# 'PORT' : '',
+		# 'OPTIONS':{
+		# 	'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+			
+		# 	'read_default_file': './digin/my.cnf',
+		# },
+		# 'TEST': {
+		# 	'CHARSET': 'utf8mb4',
+		# 	'COLLATION': 'utf8mb4_unicode_ci',	
+		# }
+       
     }
+	
 }
 
 
@@ -169,16 +149,25 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Chicago'
 
 USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
+
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
+SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 
+STATIC_ROOT = SITE_ROOT
 STATIC_URL = '/static/'
+
+
+STATICFILES_DIRS = (
+  os.path.join(SITE_ROOT, 'static-asset/'),
+)
+

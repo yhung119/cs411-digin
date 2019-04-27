@@ -1,17 +1,19 @@
 import pke
-from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+# from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 import matplotlib.pyplot as plt
 import collections
+import os
+from .wordCloud import wordCloud
 
 # define the set of valid Part-of-Speeches
 pos = {'ADJ'}
-
-
 
 def generate_wordcloud(place_id, reviews):
 	
 	freq = collections.defaultdict(float)
 	for review in reviews:
+		if len(review) <= 10:
+			continue
 		print(review)
 		# 1. create a TextRank extractor.
 		extractor = pke.unsupervised.TextRank()
@@ -32,10 +34,15 @@ def generate_wordcloud(place_id, reviews):
 		keyphrases = extractor.get_n_best(n=10)
 		for keyphrase in keyphrases:
 			freq[keyphrase[0]] += 1
-
-	wordcloud = WordCloud().generate_from_frequencies(freq)
+	print(keyphrases)
 	filename = str(place_id) + ".png"
+	if len(freq) == 0:
+		os.system("cp /home/yi/Documents/School/CS411/cs411-digin/digin/digin/static-asset/nowords.png " + "/home/yi/Documents/School/CS411/cs411-digin/digin/digin/static-asset/"+filename)
+		return filename
+	print(freq)
+	wordcloud = wordCloud().get_wordCloud(freq)
 	plt.imsave("digin/static-asset/" + filename, wordcloud)
 	# plt.imsave(filename, wordcloud)
 
 	return filename
+
