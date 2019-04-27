@@ -32,7 +32,8 @@ class Place(models.Model):
 	place_id = models.CharField(max_length=200, unique=True)
 	website = models.CharField(max_length=200, blank=True)
 	reviews = models.CharField(max_length=10000)
-
+	city = models.CharField(max_length=200)
+	
 
 class Choice(models.Model):
 	'''
