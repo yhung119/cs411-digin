@@ -131,7 +131,7 @@ DATABASES = {
 		#},
 		'USER' : 'root',
 		'PASSWORD' : '',
-		'NAME' : 'test2',
+		'NAME' : 'test3',
 		'HOST' : 'localhost',
 		'PORT' : '3306',
 		'OPTIONS':{

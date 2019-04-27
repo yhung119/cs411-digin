@@ -116,10 +116,9 @@ input[type=choice] {
 
 {% csrf_token %}
     <input id="choice" type="text" name="choice" value="{{ choice }}" maxlength="200" style="width:200px">
-	  
+	<input id="citytable" type="hidden" name="citytable" value="" maxlength="200">
     <input id="placeId" type="hidden" name="placeId" value="" maxlength="200">
-
-    <input type="submit" value="Add Choice">
+    <input type="submit" value="Add Choice"><br>
 	
 </vote>
 <script>
@@ -173,12 +172,28 @@ input[type=choice] {
 		var sessionToken = new google.maps.places.AutocompleteSessionToken();
 		var input = document.getElementById('choice');
 		var options={types:['establishment']};
+		
 		autocomplete=new google.maps.places.Autocomplete(input,options);
 		autocomplete.addListener('place_changed',onPlaceChanged);
+		
+		
 	}
 	function onPlaceChanged(){
 		var place=autocomplete.getPlace();
 
+		var components = place.address_components;
+		var city = null;
+		for (var i = 0, component; component = components[i]; i++) {
+			
+			if (component.types[0] == 'locality') {
+				city = component['long_name'];
+			}
+		}
+		console.log("testing city");
+		var inp_city=document.getElementById("citytable");
+		inp_city.value=city;
+		console.log(inp_city.value);
+		
 		console.log(place);
 	    var inp_place_id=document.getElementById("placeId");
 	    inp_place_id.value=place.place_id;
@@ -205,6 +220,7 @@ input[type=choice] {
         }
 		
 	}
+	
 </script>
 	
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAQs1AhWqKf-H-TNVh6j1moFjTwBfAn97s&libraries=places&callback=activatePlacesSearch"></script>
@@ -212,6 +228,20 @@ input[type=choice] {
 </form>
 
 {% endif %}
+
+<div align="left">
+<input id="city" type="text" name="city" value="{{ city }}" maxlength="200" style="width:200px">
+<input id="retcity" type="button" value="Filter City">
+<script>
+	document.getElementById("retcity").onclick=function(){
+		var tttt=document.getElementById("city");
+		console.log("retcity");
+		
+		console.log(tttt.value);
+		a();
+	}
+</script>
+</div>
 
 <div class="chart-container">
 <canvas id="myChart" width="200" height="200"></canvas>
@@ -241,18 +271,27 @@ input[type=choice] {
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.min.js"></script>
 <script>
+function a(){
+var tttt=document.getElementById("city");
+console.log("testfunc");
+console.log(tttt.value);
+
 {% block jquery %}
 	var endpoint='/api/data/'
 	var defaultData=[]
 	var labels=['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'];
 	var gdata;
+	
 	$.ajax({
 		method:"GET",
 		url:endpoint,
+		data:{'passin':tttt.value},
 		success: function(data){
 
 			console.log(Object.keys(data))
 			console.log(data)
+			var inputt = document.getElementById('city');
+			console.log(inputt.value)
 			for (var key in data){
 				if (key.length > 10){
 					data[key.substring(0,9)] = data[key];
@@ -279,6 +318,7 @@ input[type=choice] {
 	$.ajax({
 		method:"GET",
 		url:'/api/mvisited/',
+		data:{'passin':tttt.value},
 		success: function(data){
 
 			console.log(Object.keys(data))
@@ -308,6 +348,7 @@ input[type=choice] {
 	$.ajax({
 		method:"GET",
 		url:'/api/mvotedx/',
+		data:{'passin':tttt.value},
 		success: function(data){
 
 			console.log(Object.keys(data))
@@ -337,6 +378,7 @@ input[type=choice] {
 	$.ajax({
 		method:"GET",
 		url:'/api/mvisitedx/',
+		data:{'passin':tttt.value},
 		success: function(data){
 
 			console.log(Object.keys(data))
@@ -366,9 +408,11 @@ input[type=choice] {
 	$.ajax({
 		method:"GET",
 		url:'/api/price/',
+		data:{'passin':tttt.value},
 		success: function(data){
 
 			console.log(Object.keys(data))
+			console.log("testing")
 			console.log(data)
 			for (var key in data){
 				if (key.length > 10){
@@ -396,6 +440,7 @@ input[type=choice] {
 	$.ajax({
 		method:"GET",
 		url:'/api/rating/',
+		data:{'passin':tttt.value},
 		success: function(data){
 
 			console.log(Object.keys(data))
@@ -425,6 +470,8 @@ input[type=choice] {
 	
 
 {% endblock %}
+}
+a();
 </script>
 
 {% endblock %}
