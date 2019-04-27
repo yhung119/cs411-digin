@@ -19,6 +19,7 @@ import random
 from .review_views import generate_wordcloud
 from .googleUtil import get_restaurant_attr
 import json
+import subprocess
 
 
 class HomePageView(TemplateView):
@@ -107,7 +108,8 @@ class DetailView(generic.DetailView):
     def get_context_data(self, **kwargs):
         context = super(DetailView, self).get_context_data(**kwargs)
         context["choices"] = Choice.objects.raw("SELECT * FROM polls_choice WHERE question_id = %s",[context["question"].id])
-        
+       
+
         if context["question"].is_active is False:
             # Archive_question.objects.get(question=context["question"])
             archive_place_id = Archive_question.objects.raw("SELECT * FROM polls_archive_question WHERE question_id=%s",[context["question"].id])
@@ -226,7 +228,9 @@ def addChoice(request, question_id):
         print("existed rest")
         p = place[0]
         attrs = [p.name, p.address, p.phone, p.rating, p.price_level, p.place_id, p.reviews, p.latitude, p.longitude, p.website,p.city]
-    generate_wordcloud(place_id, json.loads(attrs[6]))
+    generate_wordcloud(place_id, json.loads(attrs[6]), schedule=timezone.now())
+    p = subprocess.Popen("./process_tasks.sh", shell=True)
+
     try:
         question = Question.objects.raw("SELECT * FROM polls_question WHERE id = %s", [question_id])[0]
     except Question.DoesNotExist:

@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 	'django_mysql',
 	'polls',
     'users',
+    'background_task',
 ]
 
 MIDDLEWARE = [
@@ -170,4 +171,7 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (
   os.path.join(SITE_ROOT, 'static-asset/'),
 )
+BACKGROUND_TASK_RUN_ASYNC = True
+MAX_ATTEMPTS=1
+
 

@@ -55,8 +55,6 @@ class wordCloud:
 
 		draw = ImageDraw.Draw(img)
 		orientation = Image.ROTATE_90
-		font = ImageFont.truetype('Roboto-Bold.ttf', size=45)
-
 		# initial size
 		size = self.height // 4 * 2
 		# initial grd
@@ -158,12 +156,5 @@ class wordCloud:
 
 				draw.text((x,y), test, fill=color, font=font)
 
-		# pixels = img.load()
-		# for i in range(img.size[0]):
-		# 	for j in range(img.size[1]):
-		# 		if (grid[i][j] == 0):
-		# 			pixels[i,j] = (0, 0, 0)
-
-		# show image
 		return img
 		
