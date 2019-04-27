@@ -9,7 +9,7 @@ class wordCloud:
 		self.width = width 
 		self.height = height
 
-	def check_grid(self, grid, font, x, y, offset_y, word):
+	def check_grid(self, integral_grid, font, x, y, offset_y, word):
 		'''
 		params:
 			grid: indicates which index is occupied
@@ -21,14 +21,21 @@ class wordCloud:
 		tx = x
 		for char in word:
 			(_, _), (_, offset_y_) = font.font.getsize(char)
-			for i in range(font.getsize(char)[0]):
-				for j in range(font.getsize(char)[1]-offset_y_):
-					if grid[i+tx][y+j+offset_y_] == 1:
-						return False
+			x_size = font.getsize(char)[0]
+			y_size = font.getsize(char)[1]
+			if (integral_grid[tx][y+offset_y_] + integral_grid[tx+x_size][y+y_size] 
+				- integral_grid[tx+x_size][y+offset_y_] - integral_grid[tx][y+y_size] > 0):
+				return False
 			tx += font.getsize(char)[0]
+
+
+			# for i in range(font.getsize(char)[0]):
+			# 	for j in range(font.getsize(char)[1]-offset_y_):
+			# 		if grid[i+tx][y+j+offset_y_] == 1:
+			# 			return False
 		return True
 
-	def check_grid_vertical(self, grid, font, x, y, offset_y, word):
+	def check_grid_vertical(self, integral_grid, font, x, y, offset_y, word):
 		'''
 		params:
 			grid: indicates which index is occupied
@@ -40,10 +47,15 @@ class wordCloud:
 		(_, _), (_, offset_y_) = font.font.font.getsize(word)
 		for char in word[::-1]:
 			(_, _), (_, offset_y_local) = font.font.font.getsize(char)
-			for i in range(offset_y_local-offset_y_, font.getsize(char)[0]-offset_y_):
-				for j in range(font.getsize(char)[1]):
-					if grid[i+x][ty+j] == 1:
-						return False
+			x_size = font.getsize(char)[0]
+			y_size = font.getsize(char)[1]
+			if (integral_grid[x+offset_y_local-offset_y_][ty] + integral_grid[x+x_size-offset_y_][ty+y_size] 
+				- integral_grid[x+x_size-offset_y_][ty] - integral_grid[x+offset_y_local-offset_y_][ty+y_size] > 0):
+				return False
+			# for i in range(offset_y_local-offset_y_, font.getsize(char)[0]-offset_y_):
+			# 	for j in range(font.getsize(char)[1]):
+			# 		if grid[i+x][ty+j] == 1:
+			# 			return False
 								
 			ty += font.getsize(char)[1]
 		return True
@@ -61,7 +73,10 @@ class wordCloud:
 		size = self.height // 4 * 2
 		# initial grd
 		grid = np.zeros((self.width, self.height))
-		random_count = 100
+		integral_grid = np.zeros((self.width+1, self.height+1))
+		random_count = 50
+		random.seed(42)
+
 		# loop thru words
 		for test, value in sorted_freq:
 			# randomly choose a color
@@ -78,6 +93,11 @@ class wordCloud:
 			print(w, baseline, offset_x, offset_y)
 			#  finds the right size
 			while(True):
+				text_size = font.getsize(test)
+				if(text_size[0]*text_size[1] * 4 > self.width * self.height):
+					size -= 1
+					font = ImageFont.truetype('Roboto-Bold.ttf', size=size)
+					continue
 				# boolean to quit loop
 				new_size_working = False
 				x_sum = 0
@@ -89,7 +109,7 @@ class wordCloud:
 					x_sum += char_size[0]
 					y_sum = max(y_sum, char_size[1])
 		
-				if (x_sum + x < self.width and y + y_sum < self.height and self.check_grid(grid, font, x, y, offset_y, test)):
+				if (x_sum + x < self.width and y + y_sum < self.height and self.check_grid(integral_grid, font, x, y, offset_y, test)):
 					new_size_working = True
 					break
 				############# HORITZONAL FONT ##########################
@@ -102,7 +122,7 @@ class wordCloud:
 						char_size = font.getsize(char)
 						x_sum += char_size[0]
 						y_sum = max(y_sum, char_size[1])
-					if (x_sum + x < self.width and y + y_sum < self.height and self.check_grid(grid, font, x, y, offset_y, test)):
+					if (x_sum + x < self.width and y + y_sum < self.height and self.check_grid(integral_grid, font, x, y, offset_y, test)):
 						new_size_working = True
 
 						break
@@ -113,9 +133,9 @@ class wordCloud:
 				############# VERTICAL FONT ###############################
 				font = ImageFont.TransposedFont(font, orientation=orientation)
 				for i in range(random_count):
-					(x, y) = (random.randint(0,self.width), random.randint(0,self.height))
+					(x, y) = (random.randint(0,self.width-1), random.randint(0,self.height-1))
 					# check right bottom is in range and no intersection
-					if (font.getsize(test)[0] + x <= self.width and font.getsize(test)[1] + y  <= self.height and self.check_grid_vertical(grid, font, x, y, offset_y, test)):
+					if (font.getsize(test)[0] + x <= self.width and font.getsize(test)[1] + y  <= self.height and self.check_grid_vertical(integral_grid, font, x, y, offset_y, test)):
 						new_size_working = True
 						transposed = True
 						break
@@ -158,11 +178,15 @@ class wordCloud:
 
 				draw.text((x,y), test, fill=color, font=font)
 
-		# pixels = img.load()
-		# for i in range(img.size[0]):
-		# 	for j in range(img.size[1]):
-		# 		if (grid[i][j] == 0):
-		# 			pixels[i,j] = (0, 0, 0)
+			for i in range(x+1,self.width+1):
+				for j in range(y+1,self.height+1):
+					integral_grid[i][j] = grid[i-1][j-1]+integral_grid[i][j-1]+integral_grid[i-1][j]-integral_grid[i-1][j-1]
+
+		pixels = img.load()
+		for i in range(img.size[0]):
+			for j in range(img.size[1]):
+				if (grid[i][j] == 0):
+					pixels[i,j] = (0, 0, 0)
 
 		# show image
 		return img

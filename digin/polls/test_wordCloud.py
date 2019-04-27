@@ -1,10 +1,25 @@
 from wordCloud import wordCloud
 test_data = {
-'best japanese': 0.4999999999999998, 
-'quick': 0.32454725832136694, 
-'best': 0.32454716832136693, 
-'nice': 0.17545314167863288,
+    "friendly": 7,
+    "more": 6,
+    "prompt": 5,
+    "great": 4,
+    "least": 3,
+    "clean": 1,
+    "able": 2,
+    "bad": 2,
+    "pre-order":2,
+    "disappointed":2,
+    "high":2,
+    "helpful":2,
+    "expenseive":2,
+    "grumpy":2,
+    "mad":22,
 }
 wordCloud = wordCloud()
+import time
 
-wordCloud.get_wordCloud(test_data)
+start = time.time()
+wordCloud.get_wordCloud(test_data).show()
+end = time.time()
+print("time:{}".format(end - start))
