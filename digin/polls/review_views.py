@@ -1,13 +1,14 @@
 import pke
-# from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 import matplotlib.pyplot as plt
 import collections
 import os
 from .wordCloud import wordCloud
+from background_task import background
 
 # define the set of valid Part-of-Speeches
 pos = {'ADJ'}
-
+@background(schedule=10)
 def generate_wordcloud(place_id, reviews):
 	
 	freq = collections.defaultdict(float)
@@ -33,16 +34,20 @@ def generate_wordcloud(place_id, reviews):
 		# 4. get the 10-highest scored candidates as keyphrases
 		keyphrases = extractor.get_n_best(n=10)
 		for keyphrase in keyphrases:
-			freq[keyphrase[0]] += 1
+			freq[keyphrase[0].lower()] += 1
 	print(keyphrases)
 	filename = str(place_id) + ".png"
 	if len(freq) == 0:
 		os.system("cp /home/yi/Documents/School/CS411/cs411-digin/digin/digin/static-asset/nowords.png " + "/home/yi/Documents/School/CS411/cs411-digin/digin/digin/static-asset/"+filename)
 		return filename
-	print(freq)
+	
 	wordcloud = wordCloud().get_wordCloud(freq)
+	wordcloud2 = WordCloud().generate_from_frequencies(freq)
+	filename2 = str(place_id) + "2.png"
 	plt.imsave("digin/static-asset/" + filename, wordcloud)
+	plt.imsave("digin/static-asset/" + filename2, wordcloud2)
 	# plt.imsave(filename, wordcloud)
+	
 
 	return filename
 
