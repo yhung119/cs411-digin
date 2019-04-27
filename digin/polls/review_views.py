@@ -40,16 +40,14 @@ def generate_wordcloud(place_id, reviews):
 	if len(freq) == 0:
 		os.system("cp /home/yi/Documents/School/CS411/cs411-digin/digin/digin/static-asset/nowords.png " + "/home/yi/Documents/School/CS411/cs411-digin/digin/digin/static-asset/"+filename)
 		return filename
-	print(freq)
-	import time
-	start = time.time()
+	
 	wordcloud = wordCloud().get_wordCloud(freq)
 	wordcloud2 = WordCloud().generate_from_frequencies(freq)
 	filename2 = str(place_id) + "2.png"
 	plt.imsave("digin/static-asset/" + filename, wordcloud)
 	plt.imsave("digin/static-asset/" + filename2, wordcloud2)
 	# plt.imsave(filename, wordcloud)
-	print(time.time()-time())
+	
 
 	return filename
 
